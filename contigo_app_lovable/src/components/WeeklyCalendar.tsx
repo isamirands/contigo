@@ -31,6 +31,10 @@ const DayComponent = ({
   isToday,
   onClick 
 }: DayComponentProps) => {
+  // RIMAC brand colors
+  const RIMAC_RED = '#E31E24';
+  const RIMAC_RED_LIGHT = '#FECDD0'; // Very light pastel red tint for base ring
+  
   // Calculate progress percentage
   const progress = totalActivities > 0 ? (completedActivities / totalActivities) * 100 : 0;
   const isFullyCompleted = progress === 100 && totalActivities > 0;
@@ -43,15 +47,25 @@ const DayComponent = ({
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-2 flex-1 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-2xl p-2 ${
-        isToday ? 'bg-primary/5 ring-2 ring-primary/30' : ''
+      className={`flex flex-col items-center gap-2 flex-1 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 rounded-2xl p-2 ${
+        isToday ? 'bg-red-50/50 ring-2 ring-red-200/60' : ''
       }`}
+      style={{
+        ...(isToday && { 
+          '--tw-ring-color': 'rgba(254, 205, 208, 0.6)' 
+        })
+      } as React.CSSProperties}
       aria-label={`${day} ${date}, ${completedActivities} of ${totalActivities} activities completed`}
     >
       {/* Weekday label */}
-      <span className={`text-xs font-medium ${
-        isToday ? 'text-primary font-semibold' : 'text-muted-foreground'
-      }`}>
+      <span 
+        className={`text-xs font-medium ${
+          isToday ? 'font-semibold' : ''
+        }`}
+        style={{
+          color: isToday ? RIMAC_RED : '#6B7280' // gray-500
+        }}
+      >
         {day}
       </span>
       
@@ -61,55 +75,58 @@ const DayComponent = ({
           className="absolute inset-0 w-full h-full -rotate-90" 
           viewBox="0 0 48 48"
         >
-          {/* Background ring */}
+          {/* Background ring - light RIMAC red tint or gray */}
           <circle
             cx="24"
             cy="24"
             r={radius}
             fill="none"
-            className={`${
-              totalActivities === 0 
-                ? 'stroke-gray-200' 
-                : 'stroke-purple-100'
-            }`}
+            stroke={totalActivities === 0 ? '#E5E7EB' : RIMAC_RED_LIGHT}
             strokeWidth="3"
           />
           
-          {/* Progress ring */}
+          {/* Progress ring - main RIMAC red */}
           {totalActivities > 0 && (
             <circle
               cx="24"
               cy="24"
               r={radius}
               fill="none"
-              className={`${
-                isFullyCompleted 
-                  ? 'stroke-purple-400' 
-                  : 'stroke-purple-300'
-              } transition-all duration-500 ease-out`}
+              stroke={RIMAC_RED}
               strokeWidth="3"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
+              className="transition-all duration-500 ease-out"
+              style={{
+                filter: isFullyCompleted ? 'drop-shadow(0 0 3px rgba(227, 30, 36, 0.4))' : 'none'
+              }}
             />
           )}
         </svg>
         
         {/* Date number in center */}
-        <span className={`text-lg font-bold relative z-10 ${
-          isToday 
-            ? 'text-primary' 
-            : totalActivities === 0 
-              ? 'text-gray-400' 
-              : 'text-gray-700'
-        }`}>
+        <span 
+          className={`text-lg font-bold relative z-10`}
+          style={{
+            color: isToday 
+              ? RIMAC_RED 
+              : totalActivities === 0 
+                ? '#9CA3AF' // gray-400
+                : '#374151' // gray-700
+          }}
+        >
           {date}
         </span>
         
         {/* Completion star accent */}
         {isFullyCompleted && (
           <Star 
-            className="absolute -top-1 -right-1 w-4 h-4 text-purple-400 fill-purple-400 animate-in zoom-in duration-300" 
+            className="absolute -top-1 -right-1 w-4 h-4 animate-in zoom-in duration-300" 
+            style={{
+              color: RIMAC_RED,
+              fill: RIMAC_RED
+            }}
             aria-hidden="true"
           />
         )}
