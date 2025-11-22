@@ -40,15 +40,15 @@ const ACTIVITIES = [
   },
 ];
 
-// Dummy week data
+// Dummy week data - showing last 7 days with activity completion
 const WEEK_DATA = [
-  { day: "L", date: 16, steps: 18, progress: 75, isToday: false },
-  { day: "M", date: 17, steps: 22, progress: 100, isToday: false },
-  { day: "M", date: 18, steps: 16, progress: 67, isToday: false },
-  { day: "J", date: 19, steps: 20, progress: 83, isToday: false },
-  { day: "V", date: 20, steps: 24, progress: 100, isToday: false },
-  { day: "S", date: 21, steps: 19, progress: 79, isToday: false },
-  { day: "D", date: 22, steps: 12, progress: 50, isToday: true },
+  { day: "L", date: 16, totalActivities: 4, completedActivities: 3, isToday: false },
+  { day: "M", date: 17, totalActivities: 5, completedActivities: 5, isToday: false },
+  { day: "M", date: 18, totalActivities: 4, completedActivities: 2, isToday: false },
+  { day: "J", date: 19, totalActivities: 6, completedActivities: 5, isToday: false },
+  { day: "V", date: 20, totalActivities: 4, completedActivities: 4, isToday: false },
+  { day: "S", date: 21, totalActivities: 3, completedActivities: 2, isToday: false },
+  { day: "D", date: 22, totalActivities: 5, completedActivities: 2, isToday: true },
 ];
 
 const Home = () => {
@@ -64,7 +64,21 @@ const Home = () => {
   };
 
   const progress = (completedActivities.length / ACTIVITIES.length) * 100;
-  const totalSteps = WEEK_DATA.find(d => d.isToday)?.steps || 0;
+  
+  // Update week data with real-time completion for today
+  const updatedWeekData = WEEK_DATA.map(day => {
+    if (day.isToday) {
+      return {
+        ...day,
+        totalActivities: ACTIVITIES.length,
+        completedActivities: completedActivities.length,
+      };
+    }
+    return day;
+  });
+  
+  const todayData = updatedWeekData.find(d => d.isToday);
+  const totalSteps = todayData ? Math.round((todayData.completedActivities / todayData.totalActivities) * 24) : 0;
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -81,7 +95,10 @@ const Home = () => {
           <TigoWalkingStrip steps={totalSteps} progress={progress} />
 
           {/* Section 2: Weekly Calendar */}
-          <WeeklyCalendar weekData={WEEK_DATA} />
+          <WeeklyCalendar 
+            weekData={updatedWeekData} 
+            onDayClick={(date) => toast.info(`Ver actividades del día ${date}`)}
+          />
 
           {/* Section 3 Header */}
           <h2 className="text-xl font-semibold">Actividades de hoy</h2>
