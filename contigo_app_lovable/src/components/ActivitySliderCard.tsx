@@ -4,13 +4,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Soft pastel color palette for calm, peaceful UI
 const PASTEL_COLORS = [
-  { base: '#FDE2E4', fill: '#FBB6BC', name: 'soft pink' },      // Soft pink
-  { base: '#E2F0CB', fill: '#C5E1A5', name: 'light green' },    // Light green
-  { base: '#F9F1D9', fill: '#F0E4B3', name: 'light cream' },    // Light cream/yellow
-  { base: '#E0F4FF', fill: '#B3E0FF', name: 'soft blue' },      // Soft blue
-  { base: '#F3E8FF', fill: '#D9C2F0', name: 'soft lavender' },  // Soft lavender
-  { base: '#FFE7D6', fill: '#FFCBA4', name: 'peach' },          // Peach
-  { base: '#E4F5EA', fill: '#B8E6CA', name: 'mint' },           // Mint
+  { base: '#FDE2E4', fill: '#FBB6BC', completed: '#F9A8B0', name: 'soft pink' },      // Soft pink
+  { base: '#E2F0CB', fill: '#C5E1A5', completed: '#B8D98E', name: 'light green' },    // Light green
+  { base: '#F9F1D9', fill: '#F0E4B3', completed: '#E8D89C', name: 'light cream' },    // Light cream/yellow
+  { base: '#E0F4FF', fill: '#B3E0FF', completed: '#99D6FF', name: 'soft blue' },      // Soft blue
+  { base: '#F3E8FF', fill: '#D9C2F0', completed: '#C9AEE8', name: 'soft lavender' },  // Soft lavender
+  { base: '#FFE7D6', fill: '#FFCBA4', completed: '#FFB88A', name: 'peach' },          // Peach
+  { base: '#E4F5EA', fill: '#B8E6CA', completed: '#A0DDBB', name: 'mint' },           // Mint
 ];
 
 interface ActivitySliderCardProps {
@@ -128,7 +128,7 @@ export const ActivitySliderCard = ({
       <div
         className="absolute inset-0 transition-all duration-200"
         style={{
-          backgroundColor: completed ? '#86EFAC' : colorScheme.fill,
+          backgroundColor: completed ? colorScheme.completed : colorScheme.fill,
           width: `${progress}%`,
           transition: isDragging ? 'none' : 'width 0.3s ease-out'
         }}
@@ -138,7 +138,7 @@ export const ActivitySliderCard = ({
       <div 
         className="absolute inset-0" 
         style={{ 
-          backgroundColor: completed ? '#D1FAE5' : colorScheme.base,
+          backgroundColor: colorScheme.base,
           zIndex: -1 
         }} 
       />
@@ -161,7 +161,7 @@ export const ActivitySliderCard = ({
           
           {completed && (
             <div className="bg-white rounded-full p-1.5 shadow-sm">
-              <Check className="h-5 w-5 text-emerald-600" />
+              <Check className="h-5 w-5 text-slate-700" />
             </div>
           )}
         </div>
