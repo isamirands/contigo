@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Warm, accessible color palette for Contigo */
+    --background: 35 25% 97%;
+    --foreground: 25 15% 25%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 25 15% 25%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 15% 25%;
+
+    /* Warm coral primary - encouraging and friendly */
+    --primary: 15 85% 62%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Soft teal secondary - calm and trustworthy */
+    --secondary: 180 35% 75%;
+    --secondary-foreground: 25 15% 25%;
+
+    --muted: 35 20% 92%;
+    --muted-foreground: 25 10% 45%;
+
+    /* Gentle yellow accent - optimistic */
+    --accent: 45 90% 75%;
+    --accent-foreground: 25 15% 25%;
+
+    /* Soft green for success */
+    --success: 140 45% 65%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 35 15% 88%;
+    --input: 35 15% 88%;
+    --ring: 15 85% 62%;
+
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 25 20% 12%;
+    --foreground: 35 25% 95%;
+
+    --card: 25 18% 16%;
+    --card-foreground: 35 25% 95%;
+
+    --popover: 25 18% 16%;
+    --popover-foreground: 35 25% 95%;
+
+    --primary: 15 80% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 180 25% 35%;
+    --secondary-foreground: 35 25% 95%;
+
+    --muted: 25 15% 22%;
+    --muted-foreground: 35 15% 65%;
+
+    --accent: 45 75% 45%;
+    --accent-foreground: 35 25% 95%;
+
+    --success: 140 40% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 35 25% 95%;
+
+    --border: 25 15% 22%;
+    --input: 25 15% 22%;
+    --ring: 15 80% 58%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Safe area support for mobile devices */
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
