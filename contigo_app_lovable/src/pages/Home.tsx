@@ -187,8 +187,9 @@ const Home = () => {
         </div>
       </header>
 
-      <main className="flex-1 max-w-2xl mx-auto w-full overflow-y-auto pb-20">
-        <div className="px-4 pt-6 space-y-6">
+      <main className="flex-1 flex flex-col max-w-2xl mx-auto w-full overflow-hidden">
+        {/* Section 1 & 2: Fixed top sections (no scroll) */}
+        <div className="flex-shrink-0 px-4 pt-6 space-y-6">
           {/* Section 1: Tigo Walking Strip */}
           <TigoWalkingStrip 
             steps={teamSteps} 
@@ -208,8 +209,8 @@ const Home = () => {
           </h2>
         </div>
 
-        {/* Section 3: Scrollable Activities List */}
-        <div className="px-4 py-4">
+        {/* Section 3: Fixed-height scrollable Activities List */}
+        <div className="flex-1 px-4 py-4 overflow-y-auto min-h-0">
           <div className="space-y-4">
             {activityPool.map((activity, index) => (
               <ActivitySliderCard
@@ -226,8 +227,8 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Section 4: Actions Area - Fixed at bottom */}
-        <div className="px-4 pb-6 pt-4 space-y-3 bg-background border-t border-border sticky bottom-0">
+        {/* Section 4: Fixed Actions Area at bottom */}
+        <div className="flex-shrink-0 px-4 pb-6 pt-4 space-y-3 bg-background border-t border-border">
           <Button 
             size="lg" 
             className="w-full h-14 text-lg"
