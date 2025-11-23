@@ -236,16 +236,8 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Section 4: Actions Area - Fixed at bottom */}
-        <div className="flex-shrink-0 px-4 pb-6 pt-4 space-y-3 bg-background border-t border-border">
-          <Button 
-            size="lg" 
-            className="w-full h-14 text-lg"
-            onClick={() => toast.info("Función 'Agregar actividad' próximamente")}
-          >
-            <Plus className="h-6 w-6" />
-            Agregar actividad
-          </Button>
+        {/* Section 4: Reminders Button - Fixed at bottom */}
+        <div className="flex-shrink-0 px-4 pb-6 pt-4 bg-background border-t border-border">
           <Button 
             variant="secondary" 
             size="lg" 
