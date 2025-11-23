@@ -172,7 +172,6 @@ const Home = () => {
     }
     
     // Team mode: combine all activities from all team members
-    const allActivities: Activity[] = [];
     const activityMap = new Map<string, Activity>();
     
     TEAM_MEMBERS.forEach(member => {
@@ -198,7 +197,7 @@ const Home = () => {
     });
     
     return Array.from(activityMap.values());
-  }, [isTeam]);
+  }, [isTeam, TEAM_MEMBERS]);
 
   const handleCompleteActivity = (id: string) => {
     if (!completedActivities.includes(id)) {
@@ -233,8 +232,38 @@ const Home = () => {
     setEducationalModalOpen(false);
   };
 
+  // Reorder activities: Move "Leer artículo educativo" to the top and "Caminata de 15 min" to the bottom
+  const reorderedActivityPool = useMemo(() => {
+    // Find the reading activity (should be first)
+    const readingActivity = activityPool.find(activity => 
+      activity.id === "user2-reading" || 
+      activity.title === "Leer artículo educativo" ||
+      activity.title.toLowerCase().includes("leer")
+    );
+
+    // Find the walking activity (should be last)
+    const walkingActivity = activityPool.find(activity => 
+      activity.id === "user1-exercise" || 
+      activity.title === "Caminata de 15 min" ||
+      activity.title.includes("Caminata")
+    );
+
+    // Get all other activities (excluding reading and walking)
+    const otherActivities = activityPool.filter(
+      activity => activity !== readingActivity && activity !== walkingActivity
+    );
+
+    // Build the final order: reading first, others in middle, walking last
+    const result = [];
+    if (readingActivity) result.push(readingActivity);
+    result.push(...otherActivities);
+    if (walkingActivity) result.push(walkingActivity);
+
+    return result.length > 0 ? result : activityPool;
+  }, [activityPool]);
+
   // Reduce visible activities by exactly ONE for this mock
-  const activitiesToRender = activityPool.slice(0, Math.max(0, activityPool.length - 1));
+  const activitiesToRender = reorderedActivityPool.slice(0, Math.max(0, reorderedActivityPool.length - 1));
 
   // PART 2: Calculate progress based on TODAY'S activities (activitiesToRender)
   // This ensures Tigo only reaches the end when ALL today's visible activities are completed
