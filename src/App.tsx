@@ -1,19 +1,19 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/frontend/components/ui/toaster";
+import { Toaster as Sonner } from "@/frontend/components/ui/sonner";
+import { TooltipProvider } from "@/frontend/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Journey from "./pages/Journey";
-import GlobalJourney from "./pages/GlobalJourney";
-import NewHabit from "./pages/NewHabit";
-import Metrics from "./pages/Metrics";
-import ExplorarForos from "./pages/ExplorarForos";
-import PostDetail from "./pages/PostDetail";
-import Teams from "./pages/Teams";
-import Scoreboard from "./pages/Scoreboard";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
+import Home from "@/frontend/pages/Home";
+import Journey from "@/frontend/pages/Journey";
+import GlobalJourney from "@/frontend/pages/GlobalJourney";
+import NewHabit from "@/frontend/pages/NewHabit";
+import Metrics from "@/frontend/pages/Metrics";
+import ExplorarForos from "@/frontend/pages/ExplorarForos";
+import PostDetail from "@/frontend/pages/PostDetail";
+import Teams from "@/frontend/pages/Teams";
+import Scoreboard from "@/frontend/pages/Scoreboard";
+import Settings from "@/frontend/pages/Settings";
+import NotFound from "@/frontend/pages/NotFound";
 
 const queryClient = new QueryClient();
 
