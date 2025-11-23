@@ -137,16 +137,16 @@ const Journey = () => {
       {/* Mobile-like container */}
       <div className="max-w-[430px] w-full bg-card h-[90vh] shadow-xl relative overflow-hidden flex flex-col">
         
-        {/* Header superior */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-border">
+        {/* Header superior - ESTÁTICO */}
+        <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
           <div>
             <div className="text-lg font-bold text-primary">Contigo</div>
             <div className="text-xs text-muted-foreground">Juntos en tu camino</div>
           </div>
         </div>
 
-        {/* Carrusel de foros (scroll horizontal) */}
-        <div className="py-5">
+        {/* Carrusel de foros - ESTÁTICO */}
+        <div className="py-5 flex-shrink-0">
           <div className="flex gap-3 overflow-x-auto px-4 py-2 scrollbar-hide">
             {FORUMS.map((forum) => (
               <button
@@ -174,8 +174,10 @@ const Journey = () => {
           </div>
         </div>
 
-        {/* Información del foro actual */}
-        <div className="px-4 py-3 space-y-3">
+        {/* Contenido con scroll - SCROLLABLE */}
+        <div className="flex-1 overflow-y-auto pb-0">
+          {/* Información del foro actual */}
+          <div className="px-4 py-3 space-y-3">
           <div>
             <h1 className="text-xl font-bold tracking-wide mb-2">FORO {selectedForum.name.toUpperCase()}</h1>
             <div className="inline-block bg-secondary/30 px-3 py-1 rounded-full text-xs font-medium mb-2">
@@ -205,79 +207,78 @@ const Journey = () => {
           </div>
         </div>
 
-        {/* Filtros de posts (scroll horizontal) */}
-        <div className="px-4 py-2 border-t border-border">
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {FILTERS.map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  activeFilter === filter
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
+          {/* Filtros de posts (scroll horizontal) */}
+          <div className="px-4 py-2 border-t border-border">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {FILTERS.map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveFilter(filter)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    activeFilter === filter
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Botón AGREGAR POST */}
-        {!showForm && (
-          <div className="px-4 py-2">
-            <Button
-              onClick={handleAddPost}
-              className="w-full h-10 text-sm gap-2 shadow-lg"
-            >
-              <Plus className="h-4 w-4" />
-              AGREGAR POST
-            </Button>
-          </div>
-        )}
-
-        {/* Listado de posts (scroll vertical) */}
-        <div className="px-4 py-4 h-[350px] overflow-y-auto">
-          <div className="space-y-3 pb-20">
-            {MOCK_POSTS.map((post) => (
-              <Card key={post.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow">
-                <div onClick={() => handlePostClick(post.id)}>
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-base flex-1 pr-2">{post.title}</h3>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <User className="h-4 w-4 text-primary" />
+          {/* Listado de posts */}
+          <div className="px-4 py-4 pb-0">
+            <div className="space-y-3">
+              {MOCK_POSTS.map((post) => (
+                <Card key={post.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow">
+                  <div onClick={() => handlePostClick(post.id)}>
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-base flex-1 pr-2">{post.title}</h3>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                          <User className="h-4 w-4 text-primary" />
+                        </div>
                       </div>
                     </div>
+                    <p className="text-xs text-muted-foreground mb-2">{post.author}</p>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {post.content}
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-2">{post.author}</p>
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {post.content}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleLike(post.id);
-                    }}
-                    className="flex items-center gap-2 hover:scale-110 transition-transform"
-                  >
-                    <Heart
-                      className={`h-4 w-4 ${
-                        likedPosts.includes(post.id)
-                          ? "fill-primary text-primary"
-                          : "text-primary"
-                      }`}
-                    />
-                    <span className="text-sm text-muted-foreground">{post.likes}</span>
-                  </button>
-                </div>
-              </Card>
-            ))}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleLike(post.id);
+                      }}
+                      className="flex items-center gap-2 hover:scale-110 transition-transform"
+                    >
+                      <Heart
+                        className={`h-4 w-4 ${
+                          likedPosts.includes(post.id)
+                            ? "fill-primary text-primary"
+                            : "text-primary"
+                        }`}
+                      />
+                      <span className="text-sm text-muted-foreground">{post.likes}</span>
+                    </button>
+                  </div>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
+
+        {/* Botón FAB flotante para agregar post */}
+        {!showForm && (
+          <button
+            onClick={handleAddPost}
+            className="fixed bottom-24 right-8 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center z-30"
+            style={{ maxWidth: '430px', right: 'calc((100vw - 430px) / 2 + 2rem)' }}
+          >
+            <Plus className="h-6 w-6" />
+          </button>
+        )}
 
         {/* Formulario de agregar post */}
         {showForm && (
