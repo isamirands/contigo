@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Heart } from "lucide-react";
+import { ArrowLeft, Plus, Heart, Lock } from "lucide-react";
 import { Card } from "@/frontend/components/ui/card";
 import { toast } from "sonner";
 
@@ -15,167 +15,121 @@ const CATEGORIES = [
   { id: "monitoreo", name: "Monitoreo", emoji: "📊" },
 ];
 
-// All habits with short label
-const HABITS_DATA = {
-  hot: {
-    nivel1: [
-      { id: "h1-1", name: "Tomar un vaso de agua al despertar", emoji: "💧" },
-      { id: "h1-2", name: "Caminar 5 minutos después de comer", emoji: "🚶" },
-      { id: "h1-3", name: "Cambiar una bebida azucarada por agua", emoji: "🥤" },
-      { id: "h1-4", name: "Agregar una porción de verduras a mi plato", emoji: "🥬" },
-      { id: "h1-5", name: "Confirmar 'Tomé mi medicación' hoy", emoji: "✅" },
-    ],
-    nivel2: [
-      { id: "h2-1", name: "Caminar 10 minutos hoy", emoji: "🚶‍♂️" },
-      { id: "h2-2", name: "Hacer un plato ½ verduras, ¼ proteína, ¼ carbo", emoji: "🍽️" },
-      { id: "h2-3", name: "Registrar glucosa después de una comida", emoji: "🩸" },
-      { id: "h2-4", name: "Pasar un día sin bebidas azucaradas", emoji: "🚫" },
-      { id: "h2-5", name: "Beber 1 tomatodo completo en la mañana", emoji: "🥤" },
-    ],
-    nivel3: [
-      { id: "h3-1", name: "Caminar o ejercitarme 20–30 minutos", emoji: "🏃‍♀️" },
-      { id: "h3-2", name: "Preparar un plato peruano versión amigable para diabéticos", emoji: "🇵🇪" },
-      { id: "h3-3", name: "Revisar mi porcentaje semanal de lecturas en rango", emoji: "📊" },
-      { id: "h3-4", name: "Evitar completamente bebidas azucaradas hoy", emoji: "🛑" },
-      { id: "h3-5", name: "Llenar mi tomatodo 3 veces hoy", emoji: "💦" },
-    ],
-  },
-  nutricion: {
-    nivel1: [
-      { id: "n1-1", name: "Reducir ½ cucharadita de azúcar en una bebida", emoji: "🍬" },
-      { id: "n1-2", name: "Cambiar una bebida azucarada por agua", emoji: "🥤" },
-      { id: "n1-3", name: "Identificar la principal fuente de carbohidratos en mi almuerzo", emoji: "🍚" },
-      { id: "n1-4", name: "Agregar una porción de verduras a mi plato", emoji: "🥬" },
-      { id: "n1-5", name: "Cambiar jugo por fruta entera", emoji: "🍎" },
-      { id: "n1-6", name: "Usar pan integral en una comida", emoji: "🍞" },
-      { id: "n1-7", name: "Comer 1 comida sin celular", emoji: "📵" },
-      { id: "n1-8", name: "Añadir una fruta entera al desayuno", emoji: "🍌" },
-      { id: "n1-9", name: "Comer dentro de las primeras 2 horas después de despertar", emoji: "⏰" },
-      { id: "n1-10", name: "Planear qué almorzaré mañana", emoji: "📝" },
-    ],
-    nivel2: [
-      { id: "n2-1", name: "Usar stevia adecuada (sin rellenos) en una bebida", emoji: "🌿" },
-      { id: "n2-2", name: "Pasar un día sin bebidas azucaradas", emoji: "🚫" },
-      { id: "n2-3", name: "Registrar cuántas cucharadas de arroz serví", emoji: "🥄" },
-      { id: "n2-4", name: "Cambiar arroz blanco por integral/quinua", emoji: "🌾" },
-      { id: "n2-5", name: "Hacer un plato ½ verduras, ¼ proteína, ¼ carbo", emoji: "🍽️" },
-      { id: "n2-6", name: "Combinar 2 colores de verduras en una comida", emoji: "🥕" },
-      { id: "n2-7", name: "Cambiar un snack procesado por frutos secos o yogur sin azúcar", emoji: "🥜" },
-      { id: "n2-8", name: "Tomar 3 respiraciones antes de comer un antojo", emoji: "🧘" },
-      { id: "n2-9", name: "Agregar semillas (chia/linaza) a una comida", emoji: "🌱" },
-      { id: "n2-10", name: "Comer más lento durante 10 minutos", emoji: "🐌" },
-      { id: "n2-11", name: "Preparar una comida saludable por adelantado", emoji: "🥡" },
-    ],
-    nivel3: [
-      { id: "n3-1", name: "Reducir azúcar al 50% hoy", emoji: "📉" },
-      { id: "n3-2", name: "Evitar completamente bebidas azucaradas hoy", emoji: "🛑" },
-      { id: "n3-3", name: "Registrar cómo me siento 2 horas después de comer carbohidratos", emoji: "📋" },
-      { id: "n3-4", name: "Preparar un plato peruano versión amigable para diabéticos", emoji: "🇵🇪" },
-      { id: "n3-5", name: "Reemplazar mantequilla por palta en una comida", emoji: "🥑" },
-      { id: "n3-6", name: "Describir si un antojo fue emocional o físico", emoji: "💭" },
-      { id: "n3-7", name: "Comer una ensalada pequeña antes de la comida principal", emoji: "🥗" },
-      { id: "n3-8", name: "Elegir un snack con menos de 5 ingredientes", emoji: "🏷️" },
-      { id: "n3-9", name: "Hacer lista de compras saludable para 3 días", emoji: "🛒" },
-    ],
-  },
-  ejercicio: {
-    nivel1: [
-      { id: "e1-1", name: "Caminar 2–5 minutos después de una comida", emoji: "🚶" },
-      { id: "e1-2", name: "Hacer 1 minuto de estiramientos al despertar", emoji: "🤸" },
-      { id: "e1-3", name: "Ponerme las zapatillas", emoji: "👟" },
-    ],
-    nivel2: [
-      { id: "e2-1", name: "Caminar 10 minutos hoy", emoji: "🚶‍♂️" },
-      { id: "e2-2", name: "Aumentar 500 pasos respecto a ayer", emoji: "📈" },
-      { id: "e2-3", name: "Hacer 3–5 minutos de movilidad", emoji: "🧘‍♀️" },
-    ],
-    nivel3: [
-      { id: "e3-1", name: "Caminar o ejercitarme 20–30 minutos", emoji: "🏃‍♀️" },
-      { id: "e3-2", name: "Hacer ejercicios con banda elástica", emoji: "💪" },
-      { id: "e3-3", name: "Medir glucosa antes y después del ejercicio", emoji: "📊" },
-    ],
-  },
-  agua: {
-    nivel1: [
-      { id: "a1-1", name: "Colocar botella de agua junto a la cama", emoji: "🛏️" },
-      { id: "a1-2", name: "Tomar un sorbo al despertar", emoji: "💧" },
-      { id: "a1-3", name: "Llenar el tomatodo en la mañana", emoji: "🚰" },
-    ],
-    nivel2: [
-      { id: "a2-1", name: "Beber 1 tomatodo completo en la mañana", emoji: "🥤" },
-      { id: "a2-2", name: "Registrar cuánta agua tomé hoy", emoji: "📝" },
-    ],
-    nivel3: [
-      { id: "a3-1", name: "Llenar mi tomatodo 3 veces hoy", emoji: "💦" },
-      { id: "a3-2", name: "Tomar un vaso de agua antes de cada comida", emoji: "🥛" },
-    ],
-  },
-  medicacion: {
-    nivel1: [
-      { id: "m1-1", name: "Confirmar/ingresar mis medicamentos", emoji: "💊" },
-      { id: "m1-2", name: "Elegir cuántos días antes quiero recordatorio de reposición", emoji: "🔔" },
-      { id: "m1-3", name: "Confirmar 'Tomé mi medicación' hoy", emoji: "✅" },
-      { id: "m1-4", name: "Registrar si olvidé alguna toma", emoji: "⚠️" },
-    ],
-    nivel2: [
-      { id: "m2-1", name: "Marcar 'Recibí alerta de que quedan pocos días de medicación'", emoji: "📢" },
-    ],
-    nivel3: [
-      { id: "m3-1", name: "Confirmar 'Ya compré mi reposición de medicación'", emoji: "🛍️" },
-      { id: "m3-2", name: "Revisar mi informe semanal de adherencia", emoji: "📊" },
-      { id: "m3-3", name: "Registrar si tuve efectos secundarios", emoji: "📋" },
-    ],
-  },
-  aprendizaje: {
-    nivel1: [
-      { id: "ap1-1", name: "Ver microlección: 'Cómo medir mi glucosa'", emoji: "🎓" },
-      { id: "ap1-2", name: "Ver microlección: 'Mitos sobre la diabetes'", emoji: "💡" },
-      { id: "ap1-3", name: "Ver microlección: 'Cómo elegir la stevia correcta'", emoji: "🌿" },
-      { id: "ap1-4", name: "Revisar etiqueta de stevia para verificar que no tiene azúcar añadida", emoji: "🔍" },
-    ],
-    nivel2: [
-      { id: "ap2-1", name: "Ver guía: 'Comidas peruanas compatibles con diabetes'", emoji: "🇵🇪" },
-      { id: "ap2-2", name: "Leer 3 etiquetas y detectar azúcar oculta", emoji: "🏷️" },
-      { id: "ap2-3", name: "Ver lección: 'Cómo crear un plato balanceado'", emoji: "🍽️" },
-    ],
-    nivel3: [
-      { id: "ap3-1", name: "Ver lección: 'Índice glucémico en platos peruanos'", emoji: "📈" },
-      { id: "ap3-2", name: "Ver lección: 'Manejo emocional de antojos'", emoji: "🧠" },
-      { id: "ap3-3", name: "Ver lección: 'Qué hacer ante glucosa alta o baja'", emoji: "⚕️" },
-    ],
-  },
-  monitoreo: {
-    nivel1: [
-      { id: "mo1-1", name: "Registrar glucosa en ayunas", emoji: "🩸" },
-      { id: "mo1-2", name: "Registrar presión arterial", emoji: "💓" },
-      { id: "mo1-3", name: "Registrar un síntoma (sed, cansancio, mareo)", emoji: "📝" },
-    ],
-    nivel2: [
-      { id: "mo2-1", name: "Registrar glucosa después de una comida", emoji: "🍽️" },
-      { id: "mo2-2", name: "Registrar glucosa antes y después del ejercicio", emoji: "🏃" },
-    ],
-    nivel3: [
-      { id: "mo3-1", name: "Revisar mi porcentaje semanal de lecturas en rango", emoji: "📊" },
-      { id: "mo3-2", name: "Registrar qué comí antes de una lectura alta", emoji: "📋" },
-      { id: "mo3-3", name: "Aceptar una recomendación automática", emoji: "✨" },
-    ],
-  },
+// Habit type with level and short display name
+type HabitItem = {
+  id: string;
+  displayName: string; // SHORT: max 3 words
+  fullName: string; // Full description (for tooltips/details)
+  emoji: string;
+  level: 1 | 2 | 3;
+};
+
+// All habits data - MAX 10 per category enforced below
+const HABITS_DATA: Record<string, HabitItem[]> = {
+  hot: [
+    { id: "h1", displayName: "Agua", fullName: "Tomar agua al despertar", emoji: "💧", level: 1 },
+    { id: "h2", displayName: "Caminar", fullName: "Caminar 5 minutos", emoji: "🚶", level: 1 },
+    { id: "h3", displayName: "Verduras", fullName: "Agregar verduras", emoji: "🥬", level: 1 },
+    { id: "h4", displayName: "Medicación", fullName: "Tomar medicación", emoji: "✅", level: 1 },
+    { id: "h5", displayName: "Plato balanceado", fullName: "Plato balanceado", emoji: "🍽️", level: 2 },
+    { id: "h6", displayName: "Glucosa", fullName: "Registrar glucosa", emoji: "🩸", level: 2 },
+    { id: "h7", displayName: "Sin azúcar", fullName: "Día sin azúcar", emoji: "🚫", level: 2 },
+    { id: "h8", displayName: "Ejercicio 30min", fullName: "Ejercicio 30 minutos", emoji: "🏃‍♀️", level: 3 },
+    { id: "h9", displayName: "Plato peruano", fullName: "Plato peruano saludable", emoji: "🇵🇪", level: 3 },
+    { id: "h10", displayName: "Reporte semanal", fullName: "Revisar reporte semanal", emoji: "📊", level: 3 },
+  ],
+  nutricion: [
+    { id: "n1", displayName: "Menos azúcar", fullName: "Reducir azúcar", emoji: "🍬", level: 1 },
+    { id: "n2", displayName: "Agua", fullName: "Cambiar bebida por agua", emoji: "🥤", level: 1 },
+    { id: "n3", displayName: "Verduras", fullName: "Agregar verduras", emoji: "🥬", level: 1 },
+    { id: "n4", displayName: "Fruta entera", fullName: "Comer fruta entera", emoji: "🍎", level: 1 },
+    { id: "n5", displayName: "Pan integral", fullName: "Usar pan integral", emoji: "🍞", level: 1 },
+    { id: "n6", displayName: "Plato balanceado", fullName: "Plato balanceado", emoji: "🍽️", level: 2 },
+    { id: "n7", displayName: "Stevia", fullName: "Usar stevia", emoji: "🌿", level: 2 },
+    { id: "n8", displayName: "Snack saludable", fullName: "Snack saludable", emoji: "🥜", level: 2 },
+    { id: "n9", displayName: "Plato peruano", fullName: "Plato peruano saludable", emoji: "🇵🇪", level: 3 },
+    { id: "n10", displayName: "Lista compras", fullName: "Lista de compras", emoji: "🛒", level: 3 },
+  ],
+  ejercicio: [
+    { id: "e1", displayName: "Caminar", fullName: "Caminar 5 minutos", emoji: "🚶", level: 1 },
+    { id: "e2", displayName: "Estiramientos", fullName: "Estiramientos", emoji: "🤸", level: 1 },
+    { id: "e3", displayName: "Zapatillas", fullName: "Ponerme zapatillas", emoji: "👟", level: 1 },
+    { id: "e4", displayName: "Caminar 10min", fullName: "Caminar 10 minutos", emoji: "🚶‍♂️", level: 2 },
+    { id: "e5", displayName: "500 pasos", fullName: "Aumentar 500 pasos", emoji: "📈", level: 2 },
+    { id: "e6", displayName: "Movilidad", fullName: "Movilidad 5 minutos", emoji: "🧘‍♀️", level: 2 },
+    { id: "e7", displayName: "Ejercicio 30min", fullName: "Ejercicio 30 minutos", emoji: "🏃‍♀️", level: 3 },
+    { id: "e8", displayName: "Banda elástica", fullName: "Ejercicios con banda", emoji: "💪", level: 3 },
+    { id: "e9", displayName: "Glucosa ejercicio", fullName: "Medir glucosa ejercicio", emoji: "📊", level: 3 },
+  ],
+  agua: [
+    { id: "a1", displayName: "Botella cama", fullName: "Botella junto a cama", emoji: "🛏️", level: 1 },
+    { id: "a2", displayName: "Agua mañana", fullName: "Agua al despertar", emoji: "💧", level: 1 },
+    { id: "a3", displayName: "Llenar tomatodo", fullName: "Llenar tomatodo", emoji: "🚰", level: 1 },
+    { id: "a4", displayName: "1 tomatodo", fullName: "Beber 1 tomatodo", emoji: "🥤", level: 2 },
+    { id: "a5", displayName: "Registrar agua", fullName: "Registrar agua", emoji: "📝", level: 2 },
+    { id: "a6", displayName: "3 tomatodos", fullName: "Llenar 3 veces", emoji: "💦", level: 3 },
+    { id: "a7", displayName: "Agua comidas", fullName: "Agua antes comidas", emoji: "🥛", level: 3 },
+  ],
+  medicacion: [
+    { id: "m1", displayName: "Ingresar meds", fullName: "Ingresar medicamentos", emoji: "💊", level: 1 },
+    { id: "m2", displayName: "Recordatorio", fullName: "Configurar recordatorio", emoji: "🔔", level: 1 },
+    { id: "m3", displayName: "Tomé medicación", fullName: "Confirmar medicación", emoji: "✅", level: 1 },
+    { id: "m4", displayName: "Olvido", fullName: "Registrar olvido", emoji: "⚠️", level: 1 },
+    { id: "m5", displayName: "Alerta", fullName: "Recibir alerta", emoji: "📢", level: 2 },
+    { id: "m6", displayName: "Compré reposición", fullName: "Confirmar reposición", emoji: "🛍️", level: 3 },
+    { id: "m7", displayName: "Informe adherencia", fullName: "Revisar informe", emoji: "📊", level: 3 },
+    { id: "m8", displayName: "Efectos", fullName: "Registrar efectos", emoji: "📋", level: 3 },
+  ],
+  aprendizaje: [
+    { id: "ap1", displayName: "Medir glucosa", fullName: "Lección: Medir glucosa", emoji: "🎓", level: 1 },
+    { id: "ap2", displayName: "Mitos", fullName: "Lección: Mitos diabetes", emoji: "💡", level: 1 },
+    { id: "ap3", displayName: "Stevia", fullName: "Lección: Elegir stevia", emoji: "🌿", level: 1 },
+    { id: "ap4", displayName: "Etiquetas", fullName: "Revisar etiquetas", emoji: "🔍", level: 1 },
+    { id: "ap5", displayName: "Comidas peruanas", fullName: "Guía: Comidas peruanas", emoji: "🇵🇪", level: 2 },
+    { id: "ap6", displayName: "Azúcar oculta", fullName: "Detectar azúcar oculta", emoji: "🏷️", level: 2 },
+    { id: "ap7", displayName: "Plato balanceado", fullName: "Lección: Plato balanceado", emoji: "🍽️", level: 2 },
+    { id: "ap8", displayName: "Índice glucémico", fullName: "Lección: Índice glucémico", emoji: "📈", level: 3 },
+    { id: "ap9", displayName: "Antojos", fullName: "Lección: Manejo antojos", emoji: "🧠", level: 3 },
+    { id: "ap10", displayName: "Glucosa alta/baja", fullName: "Lección: Glucosa alta/baja", emoji: "⚕️", level: 3 },
+  ],
+  monitoreo: [
+    { id: "mo1", displayName: "Glucosa ayunas", fullName: "Registrar glucosa ayunas", emoji: "🩸", level: 1 },
+    { id: "mo2", displayName: "Presión", fullName: "Registrar presión", emoji: "💓", level: 1 },
+    { id: "mo3", displayName: "Síntoma", fullName: "Registrar síntoma", emoji: "📝", level: 1 },
+    { id: "mo4", displayName: "Glucosa comida", fullName: "Glucosa después comida", emoji: "🍽️", level: 2 },
+    { id: "mo5", displayName: "Glucosa ejercicio", fullName: "Glucosa y ejercicio", emoji: "🏃", level: 2 },
+    { id: "mo6", displayName: "Reporte semanal", fullName: "Revisar reporte semanal", emoji: "📊", level: 3 },
+    { id: "mo7", displayName: "Comida alta", fullName: "Registrar comida alta", emoji: "📋", level: 3 },
+    { id: "mo8", displayName: "Recomendación", fullName: "Aceptar recomendación", emoji: "✨", level: 3 },
+  ],
 };
 
 const NewHabit = () => {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState("nutricion");
+  const [selectedCategory, setSelectedCategory] = useState("hot");
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
-  const handleAddHabit = (habit: { id: string; name: string; emoji: string }) => {
-    // TODO: Add to user's activities list
+  // Mock unlock condition - TODO: Replace with real user progress
+  const completedJourneys = 5; // Mock value
+  const isLevel3Unlocked = completedJourneys >= 10;
+
+  const handleAddHabit = (habit: HabitItem, isLocked: boolean) => {
+    if (isLocked) {
+      toast.info("Hábito bloqueado", {
+        description: "Completa más viajes para desbloquear",
+      });
+      return;
+    }
+
     toast.success("Hábito añadido", {
-      description: habit.name,
+      description: habit.displayName,
     });
   };
 
-  const toggleFavorite = (habitId: string) => {
-    setFavorites(prev => {
+  const toggleFavorite = (habitId: string, isLocked: boolean) => {
+    if (isLocked) return;
+
+    setFavorites((prev) => {
       const newFavorites = new Set(prev);
       if (newFavorites.has(habitId)) {
         newFavorites.delete(habitId);
@@ -186,7 +140,9 @@ const NewHabit = () => {
     });
   };
 
-  const categoryHabits = HABITS_DATA[selectedCategory as keyof typeof HABITS_DATA];
+  // Get habits for selected category - MAX 10
+  const allHabits = HABITS_DATA[selectedCategory] || [];
+  const visibleHabits = allHabits.slice(0, 10);
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -202,11 +158,9 @@ const NewHabit = () => {
             </button>
             <div className="flex-1 text-center">
               <h1 className="text-lg font-bold">Nuevo hábito</h1>
-              <p className="text-xs text-muted-foreground">
-                Elige hábitos para añadir
-              </p>
+              <p className="text-xs text-muted-foreground">Elige hábitos para añadir</p>
             </div>
-            <div className="w-9" /> {/* Spacer for symmetry */}
+            <div className="w-9" />
           </div>
         </div>
       </header>
@@ -220,9 +174,7 @@ const NewHabit = () => {
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
                 className={`flex flex-col items-center gap-1.5 flex-shrink-0 transition-all ${
-                  selectedCategory === category.id
-                    ? ""
-                    : "opacity-50"
+                  selectedCategory === category.id ? "" : "opacity-50"
                 }`}
               >
                 <div
@@ -234,7 +186,9 @@ const NewHabit = () => {
                 >
                   {category.emoji}
                 </div>
-                <span className="text-[11px] font-medium whitespace-nowrap">{category.name}</span>
+                <span className="text-[11px] font-medium whitespace-nowrap">
+                  {category.name}
+                </span>
               </button>
             ))}
           </div>
@@ -243,127 +197,83 @@ const NewHabit = () => {
 
       {/* Habits List */}
       <main className="max-w-2xl mx-auto px-4 py-4 pb-24">
-        <div className="space-y-5">
-          {/* Nivel 1 */}
-          <div>
-            <h2 className="text-xs font-semibold text-muted-foreground mb-2.5 px-1">
-              ⭐ Nivel 1 - Muy fácil
-            </h2>
-            <div className="space-y-2">
-              {categoryHabits.nivel1.map((habit) => (
-                <Card
-                  key={habit.id}
-                  className="p-2.5 flex items-center gap-2.5 hover:shadow-md transition-shadow"
-                >
-                  <span className="text-xl flex-shrink-0 w-8 text-center">{habit.emoji}</span>
-                  <span className="text-sm flex-1 leading-snug line-clamp-2">{habit.name}</span>
-                  <div className="flex gap-1 flex-shrink-0 items-center">
-                    <button
-                      onClick={() => toggleFavorite(habit.id)}
-                      className="p-1.5 hover:bg-secondary rounded-full transition-colors"
-                      aria-label="Favorito"
-                    >
-                      <Heart
-                        className={`h-4 w-4 ${
-                          favorites.has(habit.id)
-                            ? "fill-red-500 text-red-500"
-                            : "text-gray-400"
-                        }`}
-                      />
-                    </button>
-                    <button
-                      onClick={() => handleAddHabit(habit)}
-                      className="p-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full transition-colors"
-                      aria-label="Añadir hábito"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
+        <div className="space-y-2">
+          {visibleHabits.map((habit) => {
+            const isLocked = habit.level === 3 && !isLevel3Unlocked;
 
-          {/* Nivel 2 */}
-          <div>
-            <h2 className="text-xs font-semibold text-muted-foreground mb-2.5 px-1">
-              ⭐⭐ Nivel 2 - Intermedio
-            </h2>
-            <div className="space-y-2">
-              {categoryHabits.nivel2.map((habit) => (
-                <Card
-                  key={habit.id}
-                  className="p-2.5 flex items-center gap-2.5 hover:shadow-md transition-shadow"
-                >
-                  <span className="text-xl flex-shrink-0 w-8 text-center">{habit.emoji}</span>
-                  <span className="text-sm flex-1 leading-snug line-clamp-2">{habit.name}</span>
-                  <div className="flex gap-1 flex-shrink-0 items-center">
-                    <button
-                      onClick={() => toggleFavorite(habit.id)}
-                      className="p-1.5 hover:bg-secondary rounded-full transition-colors"
-                      aria-label="Favorito"
-                    >
-                      <Heart
-                        className={`h-4 w-4 ${
-                          favorites.has(habit.id)
-                            ? "fill-red-500 text-red-500"
-                            : "text-gray-400"
-                        }`}
-                      />
-                    </button>
-                    <button
-                      onClick={() => handleAddHabit(habit)}
-                      className="p-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full transition-colors"
-                      aria-label="Añadir hábito"
-                    >
+            return (
+              <Card
+                key={habit.id}
+                className={`p-2.5 flex items-center gap-2.5 transition-all ${
+                  isLocked
+                    ? "bg-muted/30 opacity-60"
+                    : "hover:shadow-md"
+                }`}
+              >
+                <span className="text-xl flex-shrink-0 w-8 text-center">
+                  {habit.emoji}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <span className={`text-sm font-medium ${isLocked ? "text-muted-foreground" : ""}`}>
+                    {habit.displayName}
+                  </span>
+                  {isLocked && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Lock className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">
+                        Por desbloquear
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-1 flex-shrink-0 items-center">
+                  <button
+                    onClick={() => toggleFavorite(habit.id, isLocked)}
+                    className={`p-1.5 rounded-full transition-colors ${
+                      isLocked
+                        ? "opacity-40 cursor-not-allowed"
+                        : "hover:bg-secondary"
+                    }`}
+                    aria-label="Favorito"
+                    disabled={isLocked}
+                  >
+                    <Heart
+                      className={`h-4 w-4 ${
+                        favorites.has(habit.id)
+                          ? "fill-red-500 text-red-500"
+                          : "text-gray-400"
+                      }`}
+                    />
+                  </button>
+                  <button
+                    onClick={() => handleAddHabit(habit, isLocked)}
+                    className={`p-1.5 rounded-full transition-colors ${
+                      isLocked
+                        ? "bg-muted text-muted-foreground cursor-not-allowed"
+                        : "bg-primary text-primary-foreground hover:bg-primary/90"
+                    }`}
+                    aria-label="Añadir hábito"
+                  >
+                    {isLocked ? (
+                      <Lock className="h-4 w-4" />
+                    ) : (
                       <Plus className="h-4 w-4" />
-                    </button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Nivel 3 */}
-          <div>
-            <h2 className="text-xs font-semibold text-muted-foreground mb-2.5 px-1">
-              ⭐⭐⭐ Nivel 3 - Avanzado
-            </h2>
-            <div className="space-y-2">
-              {categoryHabits.nivel3.map((habit) => (
-                <Card
-                  key={habit.id}
-                  className="p-2.5 flex items-center gap-2.5 hover:shadow-md transition-shadow"
-                >
-                  <span className="text-xl flex-shrink-0 w-8 text-center">{habit.emoji}</span>
-                  <span className="text-sm flex-1 leading-snug line-clamp-2">{habit.name}</span>
-                  <div className="flex gap-1 flex-shrink-0 items-center">
-                    <button
-                      onClick={() => toggleFavorite(habit.id)}
-                      className="p-1.5 hover:bg-secondary rounded-full transition-colors"
-                      aria-label="Favorito"
-                    >
-                      <Heart
-                        className={`h-4 w-4 ${
-                          favorites.has(habit.id)
-                            ? "fill-red-500 text-red-500"
-                            : "text-gray-400"
-                        }`}
-                      />
-                    </button>
-                    <button
-                      onClick={() => handleAddHabit(habit)}
-                      className="p-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full transition-colors"
-                      aria-label="Añadir hábito"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
+                    )}
+                  </button>
+                </div>
+              </Card>
+            );
+          })}
         </div>
+
+        {/* Level 3 unlock hint */}
+        {!isLevel3Unlocked && visibleHabits.some((h) => h.level === 3) && (
+          <div className="mt-6 p-3 bg-muted/50 rounded-lg">
+            <p className="text-xs text-muted-foreground text-center">
+              🔒 Completa {10 - completedJourneys} viajes más para desbloquear hábitos avanzados
+            </p>
+          </div>
+        )}
       </main>
     </div>
   );
