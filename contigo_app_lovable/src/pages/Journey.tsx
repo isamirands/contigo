@@ -139,19 +139,15 @@ const Journey = () => {
         
         {/* Header superior */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-border">
-          <div className="text-lg font-bold text-primary">LOGO</div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="rounded-full px-4 py-1 text-xs"
-          >
-            Conoce más aquí
-          </Button>
+          <div>
+            <div className="text-lg font-bold text-primary">Contigo</div>
+            <div className="text-xs text-muted-foreground">Juntos en tu camino</div>
+          </div>
         </div>
 
         {/* Carrusel de foros (scroll horizontal) */}
         <div className="py-5">
-          <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
+          <div className="flex gap-3 overflow-x-auto px-4 py-2 scrollbar-hide">
             {FORUMS.map((forum) => (
               <button
                 key={forum.id}
@@ -330,21 +326,6 @@ const Journey = () => {
                   {formErrors.content && (
                     <p className="text-xs text-destructive mt-1">{formErrors.content}</p>
                   )}
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Tipo de post</label>
-                  <select
-                    className="w-full px-3 py-2 border border-input rounded-md bg-background"
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  >
-                    {POST_TYPES.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
                 </div>
 
                 <div>
