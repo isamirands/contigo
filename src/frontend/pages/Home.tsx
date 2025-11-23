@@ -8,6 +8,7 @@ import { ActivitySliderCard } from "@/frontend/components/ActivitySliderCard";
 import { ActivityReminderModal } from "@/frontend/components/ActivityReminderModal";
 import { CompletionCelebration } from "@/frontend/components/CompletionCelebration";
 import { EducationalModal } from "@/frontend/components/EducationalModal";
+import { MysteryBoxReward } from "@/frontend/components/MysteryBoxReward";
 import { Pill, Droplet, Footprints, BookOpen, Moon } from "lucide-react";
 import { toast } from "sonner";
 import { LucideIcon } from "lucide-react";
@@ -124,6 +125,7 @@ const Home = () => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [educationalModalOpen, setEducationalModalOpen] = useState(false);
   const [educationalActivityId, setEducationalActivityId] = useState<string | null>(null);
+  const [mysteryBoxOpen, setMysteryBoxOpen] = useState(false);
   // Cumulative total steps since journey started (never resets)
   // MUST be 122 to match team data
   const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(getCurrentUserTeamTotalSteps());
@@ -231,21 +233,52 @@ const Home = () => {
     setEducationalModalOpen(false);
   };
 
-  // Calculate progress based on activity pool
-  const progress = activityPool.length > 0 
-    ? (completedActivities.length / activityPool.length) * 100 
+  // Reduce visible activities by exactly ONE for this mock
+  const activitiesToRender = activityPool.slice(0, Math.max(0, activityPool.length - 1));
+
+  // PART 2: Calculate progress based on TODAY'S activities (activitiesToRender)
+  // This ensures Tigo only reaches the end when ALL today's visible activities are completed
+  const totalActivitiesToday = activitiesToRender.length;
+  const completedActivitiesToday = activitiesToRender.filter(activity => 
+    completedActivities.includes(activity.id)
+  ).length;
+  
+  // Journey progress (0-100%) based on today's activities only
+  const journeyProgress = totalActivitiesToday > 0 
+    ? (completedActivitiesToday / totalActivitiesToday) * 100 
     : 0;
   
-  // Calculate team steps (shared progress for all Tigos)
-  const teamSteps = Math.round((completedActivities.length / activityPool.length) * 24);
+  // Calculate team steps (shared progress for all Tigos) - proportional to today's activities
+  const teamSteps = Math.round((completedActivitiesToday / totalActivitiesToday) * 24);
+
+  // PART 1: Mystery Box appears EVERY TIME all today's activities are completed (no daily limit for mock)
+  const allTodayHabitsCompleted = totalActivitiesToday > 0 && completedActivitiesToday === totalActivitiesToday;
+  const tigoReachedEnd = journeyProgress === 100;
+  const shouldShowMysteryBox = allTodayHabitsCompleted && tigoReachedEnd;
+
+  // Trigger Mystery Box when conditions are met
+  useEffect(() => {
+    if (shouldShowMysteryBox) {
+      // Small delay for better UX (let celebration finish first)
+      const timer = setTimeout(() => {
+        setMysteryBoxOpen(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldShowMysteryBox]);
+
+  const handleRewardClaimed = () => {
+    // For mock: no daily limit, just close the modal
+    // (removed localStorage persistence for daily limit)
+  };
   
   // Update week data with real-time completion for today
   const updatedWeekData = WEEK_DATA.map(day => {
     if (day.isToday) {
       return {
         ...day,
-        totalActivities: activityPool.length,
-        completedActivities: completedActivities.length,
+        totalActivities: totalActivitiesToday,
+        completedActivities: completedActivitiesToday,
       };
     }
     return day;
@@ -269,7 +302,7 @@ const Home = () => {
       <div className="flex-shrink-0">
         <TigoWalkingStrip 
           steps={totalStepsSinceStart} 
-          progress={progress} 
+          progress={journeyProgress} 
           teamMembers={tigoTeamMembers}
           onClick={() => navigate("/global-journey")}
         />
@@ -295,7 +328,7 @@ const Home = () => {
         {/* Section 3: Activities List - Scrollable area that takes remaining space */}
         <div className="flex-1 px-4 py-3 overflow-y-auto min-h-0">
           <div className="space-y-2.5">
-            {activityPool.map((activity, index) => (
+            {activitiesToRender.map((activity, index) => (
               <ActivitySliderCard
                 key={activity.id}
                 id={activity.id}
@@ -342,6 +375,32 @@ const Home = () => {
         onOpenChange={setEducationalModalOpen}
         onConfirm={handleEducationalConfirm}
       />
+
+      {/* Mystery Box Reward */}
+      <MysteryBoxReward
+        open={mysteryBoxOpen}
+        onOpenChange={setMysteryBoxOpen}
+        onClaimed={handleRewardClaimed}
+      />
+
+      {/* Mystery Box Badge - Shows when reward is available but not opened */}
+      {shouldShowMysteryBox && !mysteryBoxOpen && (
+        <button
+          onClick={() => setMysteryBoxOpen(true)}
+          className="fixed bottom-24 right-4 z-40 bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:scale-110 transition-transform animate-bounce"
+          aria-label="Abrir Mystery Box"
+        >
+          <div className="relative">
+            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+            </svg>
+            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
+            </span>
+          </div>
+        </button>
+      )}
     </div>
   );
 };
