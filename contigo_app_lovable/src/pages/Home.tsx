@@ -4,8 +4,9 @@ import { TigoWalkingStrip } from "@/components/TigoWalkingStrip";
 import { WeeklyCalendar } from "@/components/WeeklyCalendar";
 import { ActivitySliderCard } from "@/components/ActivitySliderCard";
 import { RemindersModal } from "@/components/RemindersModal";
+import { EducationalModal } from "@/components/EducationalModal";
 import { Button } from "@/components/ui/button";
-import { Pill, Droplet, Footprints, BookOpen, Plus, Bell, Moon } from "lucide-react";
+import { Pill, Droplet, Footprints, BookOpen, Bell, Moon } from "lucide-react";
 import { toast } from "sonner";
 import { LucideIcon } from "lucide-react";
 
@@ -66,7 +67,7 @@ const TEAM_MEMBERS: TeamMember[] = [
       {
         id: "user2-reading",
         icon: BookOpen,
-        title: "Leer artículo educativo",
+        title: "Leer artículo educativo: Hipoglucemia e hiperglucemia",
         owners: [{ name: "Ana", avatar: "" }],
       },
       {
@@ -93,6 +94,8 @@ const WEEK_DATA = [
 const Home = () => {
   const [completedActivities, setCompletedActivities] = useState<string[]>([]);
   const [remindersModalOpen, setRemindersModalOpen] = useState(false);
+  const [educationalModalOpen, setEducationalModalOpen] = useState(false);
+  const [educationalActivityId, setEducationalActivityId] = useState<string | null>(null);
   // Cumulative total steps since journey started (never resets)
   const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(42); // Mock starting value
 
@@ -151,6 +154,18 @@ const Home = () => {
         });
       }
     }
+  };
+
+  const handleEducationalClick = (id: string) => {
+    setEducationalActivityId(id);
+    setEducationalModalOpen(true);
+  };
+
+  const handleEducationalComplete = () => {
+    if (educationalActivityId && !completedActivities.includes(educationalActivityId)) {
+      handleCompleteActivity(educationalActivityId);
+    }
+    setEducationalModalOpen(false);
   };
 
   // Calculate progress based on activity pool
@@ -229,6 +244,7 @@ const Home = () => {
                 title={activity.title}
                 completed={completedActivities.includes(activity.id)}
                 onComplete={handleCompleteActivity}
+                onEducationalClick={() => handleEducationalClick(activity.id)}
                 owners={activity.owners}
                 colorIndex={index}
               />
@@ -259,6 +275,13 @@ const Home = () => {
         userActivities={CURRENT_USER_ACTIVITIES}
         teamMembers={TEAM_MEMBERS}
         isTeam={isTeam}
+      />
+
+      {/* Educational Modal */}
+      <EducationalModal
+        open={educationalModalOpen}
+        onOpenChange={setEducationalModalOpen}
+        onComplete={handleEducationalComplete}
       />
     </div>
   );
