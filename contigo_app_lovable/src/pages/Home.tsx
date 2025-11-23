@@ -1,42 +1,80 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { BottomNav } from "@/components/BottomNav";
 import { TigoWalkingStrip } from "@/components/TigoWalkingStrip";
 import { WeeklyCalendar } from "@/components/WeeklyCalendar";
 import { ActivitySliderCard } from "@/components/ActivitySliderCard";
 import { Button } from "@/components/ui/button";
-import { Pill, Droplet, Footprints, BookOpen, Plus, Bell } from "lucide-react";
+import { Pill, Droplet, Footprints, BookOpen, Plus, Bell, Moon } from "lucide-react";
 import { toast } from "sonner";
+import { LucideIcon } from "lucide-react";
 
-const ACTIVITIES = [
+// Types
+interface Activity {
+  id: string;
+  icon: LucideIcon;
+  title: string;
+  owners: Array<{ name: string; avatar?: string }>;
+}
+
+interface TeamMember {
+  id: string;
+  name: string;
+  activities: Activity[];
+}
+
+// Mock data: Current user's activities
+const CURRENT_USER_ACTIVITIES: Activity[] = [
   {
-    id: "medication-morning",
+    id: "user1-medication-morning",
     icon: Pill,
     title: "Medicación matutina",
-    owners: [{ name: "María", avatar: "" }],
+    owners: [{ name: "Tú", avatar: "" }],
   },
   {
-    id: "water-1",
+    id: "user1-water",
     icon: Droplet,
     title: "Beber agua (1L)",
-    owners: [{ name: "María", avatar: "" }],
+    owners: [{ name: "Tú", avatar: "" }],
   },
   {
-    id: "exercise",
+    id: "user1-exercise",
     icon: Footprints,
     title: "Caminata de 15 min",
-    owners: [{ name: "María", avatar: "" }, { name: "Carlos", avatar: "" }],
+    owners: [{ name: "Tú", avatar: "" }],
+  },
+];
+
+// Mock data: Team members with their activities
+// Set to empty array to test solo mode, or populate for team mode
+const TEAM_MEMBERS: TeamMember[] = [
+  {
+    id: "user1",
+    name: "Tú",
+    activities: CURRENT_USER_ACTIVITIES,
   },
   {
-    id: "education",
-    icon: BookOpen,
-    title: "Leer artículo educativo",
-    owners: [{ name: "Carlos", avatar: "" }],
-  },
-  {
-    id: "medication-evening",
-    icon: Pill,
-    title: "Medicación nocturna",
-    owners: [{ name: "María", avatar: "" }],
+    id: "user2",
+    name: "Ana",
+    activities: [
+      {
+        id: "user2-medication-evening",
+        icon: Pill,
+        title: "Medicación nocturna",
+        owners: [{ name: "Ana", avatar: "" }],
+      },
+      {
+        id: "user2-reading",
+        icon: BookOpen,
+        title: "Leer artículo educativo",
+        owners: [{ name: "Ana", avatar: "" }],
+      },
+      {
+        id: "user2-meditation",
+        icon: Moon,
+        title: "Meditación 10 min",
+        owners: [{ name: "Ana", avatar: "" }],
+      },
+    ],
   },
 ];
 
@@ -54,31 +92,89 @@ const WEEK_DATA = [
 const Home = () => {
   const [completedActivities, setCompletedActivities] = useState<string[]>([]);
 
+  // Determine if user is in a team (team has 2+ members)
+  const isTeam = TEAM_MEMBERS.length >= 2;
+
+  // Build shared activity pool
+  const activityPool = useMemo(() => {
+    if (!isTeam) {
+      // Solo mode: only current user's activities
+      return CURRENT_USER_ACTIVITIES;
+    }
+    
+    // Team mode: combine all activities from all team members
+    const allActivities: Activity[] = [];
+    const activityMap = new Map<string, Activity>();
+    
+    TEAM_MEMBERS.forEach(member => {
+      member.activities.forEach(activity => {
+        // Check if activity with same title already exists (shared activity)
+        const existingActivity = Array.from(activityMap.values()).find(
+          a => a.title === activity.title
+        );
+        
+        if (existingActivity) {
+          // Merge owners for shared activities
+          const ownerNames = new Set(existingActivity.owners.map(o => o.name));
+          activity.owners.forEach(owner => {
+            if (!ownerNames.has(owner.name)) {
+              existingActivity.owners.push(owner);
+            }
+          });
+        } else {
+          // Add new activity to the pool
+          activityMap.set(activity.id, { ...activity });
+        }
+      });
+    });
+    
+    return Array.from(activityMap.values());
+  }, [isTeam]);
+
   const handleCompleteActivity = (id: string) => {
     if (!completedActivities.includes(id)) {
       setCompletedActivities((prev) => [...prev, id]);
-      toast.success("¡Excelente! Tigo avanza un paso más", {
-        description: "Tu equipo también se beneficia de tu progreso",
-      });
+      
+      if (isTeam) {
+        toast.success("¡Excelente! Todo el equipo avanza", {
+          description: "Juntos llegamos más lejos",
+        });
+      } else {
+        toast.success("¡Excelente! Tigo avanza un paso más", {
+          description: "Sigue así, vas muy bien",
+        });
+      }
     }
   };
 
-  const progress = (completedActivities.length / ACTIVITIES.length) * 100;
+  // Calculate progress based on activity pool
+  const progress = activityPool.length > 0 
+    ? (completedActivities.length / activityPool.length) * 100 
+    : 0;
+  
+  // Calculate team steps (shared progress for all Tigos)
+  const teamSteps = Math.round((completedActivities.length / activityPool.length) * 24);
   
   // Update week data with real-time completion for today
   const updatedWeekData = WEEK_DATA.map(day => {
     if (day.isToday) {
       return {
         ...day,
-        totalActivities: ACTIVITIES.length,
+        totalActivities: activityPool.length,
         completedActivities: completedActivities.length,
       };
     }
     return day;
   });
   
-  const todayData = updatedWeekData.find(d => d.isToday);
-  const totalSteps = todayData ? Math.round((todayData.completedActivities / todayData.totalActivities) * 24) : 0;
+  // Prepare team members data for Tigo journey
+  const tigoTeamMembers = isTeam 
+    ? TEAM_MEMBERS.map(member => ({
+        id: member.id,
+        name: member.name,
+        steps: teamSteps, // All Tigos use the same shared team steps
+      }))
+    : [];
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -92,7 +188,11 @@ const Home = () => {
       <main className="flex-1 max-w-2xl mx-auto w-full overflow-y-auto">
         <div className="px-4 pt-6 space-y-6">
           {/* Section 1: Tigo Walking Strip */}
-          <TigoWalkingStrip steps={totalSteps} progress={progress} />
+          <TigoWalkingStrip 
+            steps={teamSteps} 
+            progress={progress} 
+            teamMembers={tigoTeamMembers}
+          />
 
           {/* Section 2: Weekly Calendar */}
           <WeeklyCalendar 
@@ -101,13 +201,15 @@ const Home = () => {
           />
 
           {/* Section 3 Header */}
-          <h2 className="text-xl font-semibold">Actividades de hoy</h2>
+          <h2 className="text-xl font-semibold">
+            {isTeam ? 'Actividades del equipo' : 'Actividades de hoy'}
+          </h2>
         </div>
 
         {/* Section 3: Scrollable Activities List - Fixed height for 5 cards */}
         <div className="px-4 py-4 overflow-y-auto" style={{ height: '640px' }}>
           <div className="space-y-4">
-            {ACTIVITIES.map((activity, index) => (
+            {activityPool.map((activity, index) => (
               <ActivitySliderCard
                 key={activity.id}
                 id={activity.id}
