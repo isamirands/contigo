@@ -284,6 +284,7 @@ const Home = () => {
           steps={totalStepsSinceStart} 
           progress={progress} 
           teamMembers={tigoTeamMembers}
+          onClick={() => navigate("/global-journey")}
         />
       </div>
 

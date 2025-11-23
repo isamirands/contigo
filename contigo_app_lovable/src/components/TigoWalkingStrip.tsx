@@ -12,16 +12,18 @@ interface TigoWalkingStripProps {
   steps: number;
   progress: number; // 0-100
   teamMembers?: TeamMember[];
+  onClick?: () => void;
 }
 
-export const TigoWalkingStrip = ({ steps, progress, teamMembers = [] }: TigoWalkingStripProps) => {
+export const TigoWalkingStrip = ({ steps, progress, teamMembers = [], onClick }: TigoWalkingStripProps) => {
   const isTeam = teamMembers.length >= 2;
   // Format number with comma separator for readability
   const formattedSteps = steps.toLocaleString('es-ES');
 
   return (
     <div 
-      className="relative"
+      className="relative cursor-pointer hover:opacity-95 transition-opacity"
+      onClick={onClick}
       style={{ 
         height: '200px',
         backgroundImage: `url(${TigoJourneyBg})`,

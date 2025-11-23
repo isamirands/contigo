@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Journey from "./pages/Journey";
+import GlobalJourney from "./pages/GlobalJourney";
 import NewHabit from "./pages/NewHabit";
 import Metrics from "./pages/Metrics";
 import ExplorarForos from "./pages/ExplorarForos";
@@ -25,6 +26,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/journey" element={<Journey />} />
+          <Route path="/global-journey" element={<GlobalJourney />} />
           <Route path="/new-habit" element={<NewHabit />} />
           <Route path="/metrics" element={<Metrics />} />
           <Route path="/explorar-foros" element={<ExplorarForos />} />
