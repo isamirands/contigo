@@ -83,7 +83,7 @@ const buildTeamMembers = (memberIds: string[]): TeamMemberData[] => {
         {
           id: "user2-reading",
           icon: BookOpen,
-          title: "Leer artículo educativo",
+          title: "Leer artículo educativo: Hipoglucemia e hiperglucemia",
           owners: [{ name: "Ana", avatar: "" }],
         },
         {
