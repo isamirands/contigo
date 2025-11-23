@@ -10,6 +10,7 @@ import Metrics from "./pages/Metrics";
 import ExplorarForos from "./pages/ExplorarForos";
 import PostDetail from "./pages/PostDetail";
 import Teams from "./pages/Teams";
+import Scoreboard from "./pages/Scoreboard";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/explorar-foros" element={<ExplorarForos />} />
           <Route path="/post/:id" element={<PostDetail />} />
           <Route path="/teams" element={<Teams />} />
+          <Route path="/scoreboard" element={<Scoreboard />} />
           <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

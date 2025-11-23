@@ -10,6 +10,7 @@ import { EducationalModal } from "@/components/EducationalModal";
 import { Pill, Droplet, Footprints, BookOpen, Moon, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { LucideIcon } from "lucide-react";
+import { getCurrentUserTeamTotalSteps } from "@/data/teamsData";
 
 // Types
 interface Activity {
@@ -123,7 +124,8 @@ const Home = () => {
   const [educationalModalOpen, setEducationalModalOpen] = useState(false);
   const [educationalActivityId, setEducationalActivityId] = useState<string | null>(null);
   // Cumulative total steps since journey started (never resets)
-  const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(42); // Mock starting value
+  // MUST be 122 to match team data
+  const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(getCurrentUserTeamTotalSteps());
   
   // Team members state - synced with localStorage
   const [teamMemberIds, setTeamMemberIds] = useState<string[]>(getTeamMembersFromStorage());

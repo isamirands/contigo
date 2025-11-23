@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Pencil, HandMetal, DoorOpen } from "lucide-react";
+import { Users, Pencil, HandMetal, DoorOpen, Camera, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -15,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import TigoProfileBluePenguin from "@/assets/tigo-profile-blue-penguin.png";
+import { getCurrentUserTeam } from "@/data/teamsData";
 
 // IMPORTANT: This must match the TEAM_MEMBERS structure in Home.tsx
 // to ensure consistency between the Tigo journey and the team list
@@ -24,22 +26,16 @@ interface TeamMember {
   totalSteps: number; // Individual member's contribution to team total
 }
 
+// Per-member contributions that sum to team total (122)
 const ALL_TEAM_MEMBERS: TeamMember[] = [
-  { id: "user1", name: "Tú", totalSteps: 28 },
-  { id: "user2", name: "Ana", totalSteps: 14 },
+  { id: "user1", name: "Tú", totalSteps: 82 },
+  { id: "user2", name: "Ana", totalSteps: 40 },
 ];
 
-// Get total steps from localStorage (synced with Home page)
+// Get total steps from shared team data (must be 122)
 const getTotalStepsFromStorage = (): number => {
-  try {
-    const stored = localStorage.getItem('totalStepsSinceStart');
-    if (stored) {
-      return parseInt(stored, 10);
-    }
-  } catch (e) {
-    console.error('Error reading total steps from storage:', e);
-  }
-  return 42; // Default value matching Home
+  const currentTeam = getCurrentUserTeam();
+  return currentTeam.totalSteps; // Returns 122
 };
 
 interface TeamInfo {
@@ -82,6 +78,7 @@ const saveTeamMembersToStorage = (members: TeamMember[]) => {
 };
 
 const Teams = () => {
+  const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(getTeamMembersFromStorage());
   const [teamInfo, setTeamInfo] = useState(INITIAL_TEAM_INFO);
   const [totalSteps, setTotalSteps] = useState(getTotalStepsFromStorage());
@@ -329,6 +326,22 @@ const Teams = () => {
           </div>
         </Card>
 
+        {/* Scoreboard Entry Point */}
+        <Card 
+          className="p-4 mb-6 cursor-pointer hover:bg-accent/50 transition-colors"
+          onClick={() => navigate("/scoreboard")}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+              <Trophy className="h-5 w-5 text-yellow-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-base">Ver ranking de equipos</h3>
+              <p className="text-sm text-muted-foreground">Compara tu progreso con otros equipos</p>
+            </div>
+          </div>
+        </Card>
+
         {/* Team Members */}
         <section className="mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -428,6 +441,41 @@ const Teams = () => {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
+            {/* Team Photo Section */}
+            <div className="flex flex-col items-center space-y-2">
+              <div className="relative">
+                {/* Team avatar/photo */}
+                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+                  <Users className="h-12 w-12 text-primary" />
+                </div>
+                
+                {/* Camera icon overlay - change photo affordance */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    console.log("Change team photo clicked");
+                    toast.info("Cambiar foto del equipo - próximamente");
+                  }}
+                  className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center shadow-lg transition-colors"
+                  aria-label="Cambiar foto del equipo"
+                >
+                  <Camera className="h-4 w-4 text-primary-foreground" />
+                </button>
+              </div>
+              
+              {/* Change photo text */}
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("Change team photo clicked");
+                  toast.info("Cambiar foto del equipo - próximamente");
+                }}
+                className="text-sm text-primary hover:underline"
+              >
+                Cambiar foto
+              </button>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="team-name">Nombre del equipo</Label>
               <Input
