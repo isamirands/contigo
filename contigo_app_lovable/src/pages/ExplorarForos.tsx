@@ -6,37 +6,52 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Users, Image as ImageIcon, ArrowLeft, Plus, Upload } from "lucide-react";
 
-const CATEGORIES = ["Diabetes", "Asma", "Hipertensión", "Lipidemia"];
+const CATEGORIES = ["Todos", "Diabetes", "Asma", "Hipertensión", "Dislipidemia"];
 
-// Mock data para foros
+// Mock data para foros con categorías
 const FORUMS_PARA_TI = [
-  { id: 1, title: "Diabetes Tipo 1", members: 666, image: "" },
-  { id: 2, title: "Control de Glucosa", members: 892, image: "" },
-  { id: 3, title: "Recetas Saludables", members: 1234, image: "" },
+  { id: 1, title: "Diabetes Tipo 1", members: 666, image: "", category: "Diabetes" },
+  { id: 2, title: "Control de Glucosa", members: 892, image: "", category: "Diabetes" },
+  { id: 3, title: "Recetas Saludables", members: 1234, image: "", category: "Nutrición" },
 ];
 
 const FORUMS_AMIGOS = [
-  { id: 4, title: "Ejercicio y Diabetes", members: 445, image: "" },
-  { id: 5, title: "Apoyo Familiar", members: 778, image: "" },
-  { id: 6, title: "Nutrición Balanceada", members: 923, image: "" },
+  { id: 4, title: "Ejercicio y Diabetes", members: 445, image: "", category: "Ejercicio" },
+  { id: 5, title: "Apoyo Familiar", members: 778, image: "", category: "Salud mental" },
+  { id: 6, title: "Nutrición Balanceada", members: 923, image: "", category: "Nutrición" },
 ];
 
 const FORUMS_DESTACADOS = [
-  { id: 7, title: "Vivir con Asma", members: 1567, image: "" },
-  { id: 8, title: "Hipertensión Controlada", members: 2341, image: "" },
-  { id: 9, title: "Colesterol y Lipidemia", members: 1890, image: "" },
+  { id: 7, title: "Vivir con Asma", members: 1567, image: "", category: "Asma" },
+  { id: 8, title: "Hipertensión Controlada", members: 2341, image: "", category: "Hipertensión" },
+  { id: 9, title: "Colesterol y Dislipidemia", members: 1890, image: "", category: "Dislipidemia" },
 ];
 
 const ExplorarForos = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("Diabetes");
+  const [activeCategory, setActiveCategory] = useState("Todos");
   const [showCreateForumModal, setShowCreateForumModal] = useState(false);
   const [forumData, setForumData] = useState({
     title: "",
     category: "Diabetes",
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  // Función para filtrar foros
+  const filterForums = (forums: typeof FORUMS_PARA_TI) => {
+    return forums.filter((forum) => {
+      const matchesCategory = activeCategory === "Todos" || forum.category === activeCategory;
+      const matchesSearch = forum.title.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  };
+
+  const filteredParaTi = filterForums(FORUMS_PARA_TI);
+  const filteredAmigos = filterForums(FORUMS_AMIGOS);
+  const filteredDestacados = filterForums(FORUMS_DESTACADOS);
+
+  const hasResults = filteredParaTi.length > 0 || filteredAmigos.length > 0 || filteredDestacados.length > 0;
 
   const handleBackToJourney = () => {
     navigate("/journey");
@@ -86,21 +101,8 @@ const ExplorarForos = () => {
           </div>
         </div>
 
-        {/* Barra de búsqueda */}
-        <div className="px-4 py-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              placeholder="Busca o encuentra el tema de tu interés"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-12 placeholder:text-xs"
-            />
-          </div>
-        </div>
-
         {/* Chips de categorías */}
-        <div className="px-4 py-3">
+        <div className="px-4 pt-4 pb-2">
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {CATEGORIES.map((category) => (
               <button
@@ -118,70 +120,103 @@ const ExplorarForos = () => {
           </div>
         </div>
 
+        {/* Barra de búsqueda */}
+        <div className="px-4 pb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              placeholder="Busca o encuentra el tema de tu interés"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-12 placeholder:text-xs"
+            />
+          </div>
+        </div>
+
         {/* Contenido con scroll vertical */}
         <div className="overflow-y-auto pb-24">
-          {/* Sección PARA TI */}
-          <div className="py-4">
-            <h2 className="text-lg font-bold mb-4 px-4">PARA TI</h2>
-            <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
-              {FORUMS_PARA_TI.map((forum) => (
-                <Card key={forum.id} className="flex-shrink-0 w-40 overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
-                  <div className="bg-muted h-32 flex items-center justify-center">
-                    <ImageIcon className="h-10 w-10 text-muted-foreground" />
-                  </div>
-                  <div className="p-3">
-                    <h3 className="font-semibold text-sm mb-2 line-clamp-2">{forum.title}</h3>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="h-3 w-3" />
-                      <span>{forum.members}</span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+          {!hasResults ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <Search className="h-16 w-16 text-muted-foreground mb-4" />
+              <p className="text-center text-muted-foreground text-lg">
+                No se encontraron foros con ese nombre.
+              </p>
+              <p className="text-center text-muted-foreground text-sm mt-2">
+                Intenta con otra búsqueda o categoría
+              </p>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Sección PARA TI */}
+              {filteredParaTi.length > 0 && (
+                <div className="py-4">
+                  <h2 className="text-lg font-bold mb-4 px-4">PARA TI</h2>
+                  <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
+                    {filteredParaTi.map((forum) => (
+                      <Card key={forum.id} className="flex-shrink-0 w-40 overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
+                        <div className="bg-muted h-32 flex items-center justify-center">
+                          <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                        </div>
+                        <div className="p-3">
+                          <h3 className="font-semibold text-sm mb-2 line-clamp-2">{forum.title}</h3>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Users className="h-3 w-3" />
+                            <span>{forum.members}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {/* Sección DE TUS AMIGOS */}
-          <div className="py-4">
-            <h2 className="text-lg font-bold mb-4 px-4">DE TUS AMIGOS</h2>
-            <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
-              {FORUMS_AMIGOS.map((forum) => (
-                <Card key={forum.id} className="flex-shrink-0 w-40 overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
-                  <div className="bg-muted h-32 flex items-center justify-center">
-                    <ImageIcon className="h-10 w-10 text-muted-foreground" />
+              {/* Sección DE TUS AMIGOS */}
+              {filteredAmigos.length > 0 && (
+                <div className="py-4">
+                  <h2 className="text-lg font-bold mb-4 px-4">DE TUS AMIGOS</h2>
+                  <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
+                    {filteredAmigos.map((forum) => (
+                      <Card key={forum.id} className="flex-shrink-0 w-40 overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
+                        <div className="bg-muted h-32 flex items-center justify-center">
+                          <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                        </div>
+                        <div className="p-3">
+                          <h3 className="font-semibold text-sm mb-2 line-clamp-2">{forum.title}</h3>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Users className="h-3 w-3" />
+                            <span>{forum.members}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
                   </div>
-                  <div className="p-3">
-                    <h3 className="font-semibold text-sm mb-2 line-clamp-2">{forum.title}</h3>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="h-3 w-3" />
-                      <span>{forum.members}</span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
+                </div>
+              )}
 
-          {/* Sección DESTACADOS */}
-          <div className="py-4">
-            <h2 className="text-lg font-bold mb-4 px-4">DESTACADOS</h2>
-            <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
-              {FORUMS_DESTACADOS.map((forum) => (
-                <Card key={forum.id} className="flex-shrink-0 w-40 overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
-                  <div className="bg-muted h-32 flex items-center justify-center">
-                    <ImageIcon className="h-10 w-10 text-muted-foreground" />
+              {/* Sección DESTACADOS */}
+              {filteredDestacados.length > 0 && (
+                <div className="py-4">
+                  <h2 className="text-lg font-bold mb-4 px-4">DESTACADOS</h2>
+                  <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
+                    {filteredDestacados.map((forum) => (
+                      <Card key={forum.id} className="flex-shrink-0 w-40 overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
+                        <div className="bg-muted h-32 flex items-center justify-center">
+                          <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                        </div>
+                        <div className="p-3">
+                          <h3 className="font-semibold text-sm mb-2 line-clamp-2">{forum.title}</h3>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Users className="h-3 w-3" />
+                            <span>{forum.members}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
                   </div>
-                  <div className="p-3">
-                    <h3 className="font-semibold text-sm mb-2 line-clamp-2">{forum.title}</h3>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="h-3 w-3" />
-                      <span>{forum.members}</span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         <BottomNav />

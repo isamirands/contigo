@@ -13,59 +13,149 @@ const FORUMS = [
     id: 1,
     name: "Diabetes",
     color: "bg-blue-100",
+    description: "Espacio de apoyo y aprendizaje para personas con diabetes. Comparte experiencias, recetas saludables y consejos para el control de glucosa.",
+    posts: [
+      {
+        id: 1,
+        title: "¿Cómo controlo mis niveles de azúcar en la mañana?",
+        author: "María López",
+        content: "He notado que mis niveles de glucosa están altos al despertar. ¿Alguien tiene consejos sobre qué cenar para evitar esto? Mi doctor mencionó el efecto del amanecer pero me gustaría saber sus experiencias.",
+        likes: 24,
+      },
+      {
+        id: 2,
+        title: "Recetas de desayunos bajos en carbohidratos",
+        author: "Carlos Ramírez",
+        content: "Comparto mis desayunos favoritos que me han ayudado a mantener estable mi glucosa: huevos revueltos con espinacas, yogurt griego con nueces, y avena con canela. ¿Qué desayunan ustedes?",
+        likes: 45,
+      },
+      {
+        id: 3,
+        title: "Mi experiencia con la insulina de acción rápida",
+        author: "Ana Torres",
+        content: "Después de 6 meses usando insulina rápida antes de las comidas, he logrado un mejor control. Al principio tenía miedo pero con la guía de mi endocrinólogo todo ha mejorado. ¿Alguien más usa insulina?",
+        likes: 18,
+      },
+      {
+        id: 4,
+        title: "Ejercicios recomendados para diabéticos",
+        author: "Jorge Mendoza",
+        content: "Empecé a caminar 30 minutos diarios y he visto una gran diferencia en mis niveles de glucosa. ¿Qué tipo de ejercicio les ha funcionado mejor? Me gustaría probar algo nuevo.",
+        likes: 32,
+      },
+    ],
   },
   {
     id: 2,
     name: "Asma",
     color: "bg-purple-100",
+    description: "Comunidad para personas con asma. Intercambia información sobre tratamientos, manejo de crisis y cómo vivir mejor con esta condición.",
+    posts: [
+      {
+        id: 5,
+        title: "¿Cómo identificar los desencadenantes del asma?",
+        author: "Patricia Silva",
+        content: "He estado llevando un diario de síntomas y creo que el polvo y el frío son mis principales desencadenantes. ¿Cómo identificaron ustedes los suyos?",
+        likes: 19,
+      },
+      {
+        id: 6,
+        title: "Técnicas de respiración que me han ayudado",
+        author: "Roberto Díaz",
+        content: "Mi neumólogo me enseñó ejercicios de respiración diafragmática que han reducido mis crisis. Los practico 10 minutos cada mañana. ¿Alguien más usa técnicas de respiración?",
+        likes: 28,
+      },
+      {
+        id: 7,
+        title: "Uso correcto del inhalador de rescate",
+        author: "Laura Martínez",
+        content: "Descubrí que no estaba usando bien mi inhalador. La enfermera me mostró la técnica correcta y ahora siento que funciona mucho mejor. ¿Alguien tiene dudas sobre su inhalador?",
+        likes: 15,
+      },
+      {
+        id: 8,
+        title: "Asma y ejercicio: mi experiencia",
+        author: "Miguel Ángel",
+        content: "Tenía miedo de hacer ejercicio por el asma, pero con mi inhalador preventivo antes de entrenar, he podido correr sin problemas. El ejercicio ha mejorado mi capacidad pulmonar.",
+        likes: 22,
+      },
+    ],
   },
   {
     id: 3,
     name: "Hipertensión",
     color: "bg-green-100",
+    description: "Foro dedicado al control de la presión arterial. Comparte estrategias de alimentación, ejercicio y manejo del estrés para una vida más saludable.",
+    posts: [
+      {
+        id: 9,
+        title: "Reducir la sal sin perder sabor en las comidas",
+        author: "Carmen Vega",
+        content: "He aprendido a usar especias como ajo, cebolla, orégano y limón para dar sabor sin sal. Mis niveles de presión han mejorado notablemente. ¿Qué especias usan ustedes?",
+        likes: 31,
+      },
+      {
+        id: 10,
+        title: "¿Cómo manejan el estrés para controlar la presión?",
+        author: "Fernando Ruiz",
+        content: "Noté que mi presión sube cuando estoy estresado. Empecé a meditar 15 minutos al día y ha hecho una gran diferencia. ¿Qué técnicas de relajación les funcionan?",
+        likes: 26,
+      },
+      {
+        id: 11,
+        title: "Mi rutina de ejercicio para la hipertensión",
+        author: "Sandra Morales",
+        content: "Camino 40 minutos 5 veces por semana y hago yoga 2 veces. Mi cardiólogo está muy contento con mis resultados. El ejercicio regular es clave para controlar la presión.",
+        likes: 20,
+      },
+      {
+        id: 12,
+        title: "Importancia de medir la presión en casa",
+        author: "Luis Herrera",
+        content: "Compré un tensiómetro digital y ahora llevo un registro diario. Esto me ha ayudado a identificar patrones y ajustar mi medicación con mi doctor. ¿Ustedes miden su presión en casa?",
+        likes: 17,
+      },
+    ],
   },
   {
     id: 4,
-    name: "Lipidemia",
+    name: "Dislipidemia",
     color: "bg-yellow-100",
-  },
-];
-
-// Mock data for forum posts
-const MOCK_POSTS = [
-  {
-    id: 1,
-    title: "¿Cómo controlo mis niveles de azúcar en la mañana?",
-    author: "Creador_post1",
-    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    likes: 24,
-  },
-  {
-    id: 2,
-    title: "Mejores recetas para diabéticos tipo 2",
-    author: "Creador_post2",
-    content: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    likes: 45,
-  },
-  {
-    id: 3,
-    title: "Experiencia con insulina de acción rápida",
-    author: "Creador_post3",
-    content: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    likes: 18,
-  },
-  {
-    id: 4,
-    title: "¿Qué ejercicios recomiendan para controlar la diabetes?",
-    author: "Creador_post4",
-    content: "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    likes: 32,
+    description: "Comunidad enfocada en el control del colesterol y triglicéridos. Aprende sobre alimentación saludable y hábitos que mejoran tu perfil lipídico.",
+    posts: [
+      {
+        id: 13,
+        title: "Alimentos que ayudan a bajar el colesterol",
+        author: "Elena Castro",
+        content: "Incorporé avena, nueces, pescado azul y aceite de oliva a mi dieta. En 3 meses mi colesterol bajó 30 puntos. La alimentación realmente hace la diferencia.",
+        likes: 38,
+      },
+      {
+        id: 14,
+        title: "¿Estatinas sí o no? Mi experiencia",
+        author: "Ricardo Flores",
+        content: "Después de intentar solo con dieta, mi doctor me recetó estatinas. Al principio tenía dudas pero mis niveles mejoraron mucho. ¿Alguien más toma estatinas?",
+        likes: 21,
+      },
+      {
+        id: 15,
+        title: "Ejercicio aeróbico y colesterol HDL",
+        author: "Mónica Reyes",
+        content: "Empecé a nadar 3 veces por semana y mi colesterol bueno (HDL) subió significativamente. El ejercicio aeróbico es excelente para mejorar el perfil lipídico.",
+        likes: 25,
+      },
+      {
+        id: 16,
+        title: "Entendiendo los resultados del perfil lipídico",
+        author: "Alberto Sánchez",
+        content: "Mi doctor me explicó la diferencia entre LDL, HDL y triglicéridos. Ahora entiendo mejor mis análisis y qué debo mejorar. ¿Alguien tiene dudas sobre sus resultados?",
+        likes: 14,
+      },
+    ],
   },
 ];
 
 const FILTERS = ["Todos", "Amigos", "Míos", "Me gusta", "Guardados"];
-
-const POST_TYPES = ["Diabetes", "Asma", "Hipertensión", "Lipidemia"];
 
 const Journey = () => {
   const navigate = useNavigate();
@@ -128,6 +218,8 @@ const Journey = () => {
     setSelectedForum(forum);
   };
 
+  const currentPosts = selectedForum.posts || [];
+
   const handleExploreForums = () => {
     navigate("/explorar-foros");
   };
@@ -184,7 +276,7 @@ const Journey = () => {
               14.5k miembros
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Comunidad de apoyo para personas con {selectedForum.name.toLowerCase()}.
+              {selectedForum.description}
             </p>
           </div>
 
@@ -229,7 +321,7 @@ const Journey = () => {
           {/* Listado de posts */}
           <div className="px-4 py-4 pb-0">
             <div className="space-y-3">
-              {MOCK_POSTS.map((post) => (
+              {currentPosts.map((post) => (
                 <Card key={post.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow">
                   <div onClick={() => handlePostClick(post.id)}>
                     <div className="flex items-start justify-between mb-2">
