@@ -1,244 +1,378 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Heart, MessageCircle, PenSquare, Search } from "lucide-react";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Settings, Heart, User, Image as ImageIcon, Upload, FileText } from "lucide-react";
 
-// Mock data for communities
-const COMMUNITIES = [
+// Mock data for forums (carrusel horizontal)
+const FORUMS = [
   {
     id: 1,
-    name: "Diabetes tipo 2 Lima",
-    tagline: "Compartiendo recetas y consejos",
-    members: 234,
+    name: "Diabetes",
     color: "bg-blue-100",
   },
   {
     id: 2,
-    name: "Cuidadores de papás",
-    tagline: "Apoyo entre familiares",
-    members: 156,
+    name: "Asma",
     color: "bg-purple-100",
   },
   {
     id: 3,
-    name: "Hipertensión y caminatas",
-    tagline: "Ejercicio suave en grupo",
-    members: 189,
+    name: "Hipertensión",
     color: "bg-green-100",
+  },
+  {
+    id: 4,
+    name: "Lipidemia",
+    color: "bg-yellow-100",
   },
 ];
 
-// Mock data for posts
-const MOCK_POSTS = {
-  1: [
-    {
-      id: 1,
-      title: "¿Qué desayunos les funcionan mejor?",
-      author: "María L.",
-      timeAgo: "2h",
-      likes: 12,
-      comments: 8,
-    },
-    {
-      id: 2,
-      title: "Compartiendo mi experiencia con el nuevo medidor",
-      author: "Carlos R.",
-      timeAgo: "5h",
-      likes: 24,
-      comments: 15,
-    },
-    {
-      id: 3,
-      title: "Tips para controlar la glucosa en fiestas",
-      author: "Ana M.",
-      timeAgo: "1d",
-      likes: 45,
-      comments: 23,
-    },
-  ],
-  2: [
-    {
-      id: 4,
-      title: "¿Cómo manejan el cansancio emocional?",
-      author: "Pedro S.",
-      timeAgo: "1h",
-      likes: 18,
-      comments: 12,
-    },
-    {
-      id: 5,
-      title: "Recursos para cuidadores en Lima",
-      author: "Lucía P.",
-      timeAgo: "4h",
-      likes: 31,
-      comments: 19,
-    },
-    {
-      id: 6,
-      title: "Mi papá no quiere tomar sus medicinas",
-      author: "Jorge M.",
-      timeAgo: "6h",
-      likes: 22,
-      comments: 28,
-    },
-  ],
-  3: [
-    {
-      id: 7,
-      title: "Ruta recomendada: Parque Kennedy",
-      author: "Rosa T.",
-      timeAgo: "3h",
-      likes: 15,
-      comments: 7,
-    },
-    {
-      id: 8,
-      title: "¿Alguien para caminar mañana 7am?",
-      author: "Miguel A.",
-      timeAgo: "5h",
-      likes: 9,
-      comments: 11,
-    },
-    {
-      id: 9,
-      title: "Logré caminar 30 minutos sin parar!",
-      author: "Carmen V.",
-      timeAgo: "1d",
-      likes: 52,
-      comments: 18,
-    },
-  ],
-};
+// Mock data for forum posts
+const MOCK_POSTS = [
+  {
+    id: 1,
+    title: "¿Cómo controlo mis niveles de azúcar en la mañana?",
+    author: "Creador_post1",
+    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    likes: 24,
+  },
+  {
+    id: 2,
+    title: "Mejores recetas para diabéticos tipo 2",
+    author: "Creador_post2",
+    content: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    likes: 45,
+  },
+  {
+    id: 3,
+    title: "Experiencia con insulina de acción rápida",
+    author: "Creador_post3",
+    content: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    likes: 18,
+  },
+  {
+    id: 4,
+    title: "¿Qué ejercicios recomiendan para controlar la diabetes?",
+    author: "Creador_post4",
+    content: "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    likes: 32,
+  },
+];
+
+const FILTERS = ["Todos", "Amigos", "Míos", "Me gusta", "Guardados"];
+
+const POST_TYPES = ["Diabetes", "Asma", "Hipertensión", "Lipidemia"];
 
 const Journey = () => {
-  const [selectedCommunity, setSelectedCommunity] = useState(COMMUNITIES[0]);
+  const navigate = useNavigate();
+  const [activeFilter, setActiveFilter] = useState("Todos");
+  const [selectedForum, setSelectedForum] = useState(FORUMS[0]);
+  const [showForm, setShowForm] = useState(false);
+  const [likedPosts, setLikedPosts] = useState<number[]>([]);
+  const [formData, setFormData] = useState({
+    title: "",
+    content: "",
+    type: "Diabetes",
+  });
+  const [formErrors, setFormErrors] = useState({
+    title: "",
+    content: "",
+  });
 
-  const currentPosts = MOCK_POSTS[selectedCommunity.id as keyof typeof MOCK_POSTS] || [];
-
-  const handleCreatePost = () => {
-    toast.info(`Crear publicación en "${selectedCommunity.name}"`, {
-      description: "Función próximamente disponible",
-    });
+  const toggleLike = (postId: number) => {
+    setLikedPosts((prev) =>
+      prev.includes(postId) ? prev.filter((id) => id !== postId) : [...prev, postId]
+    );
   };
 
-  const handleExploreCommunities = () => {
-    toast.info("Explorar comunidades", {
-      description: "Función próximamente disponible",
-    });
+  const handlePostClick = (postId: number) => {
+    navigate(`/post/${postId}`);
   };
 
-  const handlePostClick = (postTitle: string) => {
-    toast.info(`Abrir: ${postTitle}`);
+  const handleAddPost = () => {
+    setShowForm(true);
+    setFormErrors({ title: "", content: "" });
+  };
+
+  const handleSubmitPost = () => {
+    // Validación
+    const errors = {
+      title: formData.title.trim() === "" ? "Este campo es obligatorio" : "",
+      content: formData.content.trim() === "" ? "Este campo es obligatorio" : "",
+    };
+
+    setFormErrors(errors);
+
+    // Si hay errores, no continuar
+    if (errors.title || errors.content) {
+      return;
+    }
+
+    // Si todo está bien, cerrar formulario
+    setShowForm(false);
+    setFormData({ title: "", content: "", type: "Diabetes" });
+    setFormErrors({ title: "", content: "" });
+  };
+
+  const handleCancelPost = () => {
+    setShowForm(false);
+    setFormData({ title: "", content: "", type: "Diabetes" });
+    setFormErrors({ title: "", content: "" });
+  };
+
+  const handleForumClick = (forum: typeof FORUMS[0]) => {
+    setSelectedForum(forum);
+  };
+
+  const handleExploreForums = () => {
+    navigate("/explorar-foros");
   };
 
   return (
-    <div className="min-h-screen bg-background pb-32">
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-primary">Comunidad</h1>
-          <p className="text-sm text-muted-foreground mt-1">Conecta con otros</p>
+    <div className="min-h-screen bg-background pb-20 flex items-center justify-center">
+      {/* Mobile-like container */}
+      <div className="max-w-[430px] w-full bg-card h-[90vh] shadow-xl relative overflow-hidden flex flex-col">
+        
+        {/* Header superior */}
+        <div className="flex items-center justify-between px-4 py-4 border-b border-border">
+          <div className="text-lg font-bold text-primary">LOGO</div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="rounded-full px-4 py-1 text-xs"
+          >
+            Conoce más aquí
+          </Button>
         </div>
-      </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 pb-24">
-        {/* Section 1: Communities Grid */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-3">Tus comunidades</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {COMMUNITIES.map((community) => (
+        {/* Carrusel de foros (scroll horizontal) */}
+        <div className="py-5">
+          <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
+            {FORUMS.map((forum) => (
               <button
-                key={community.id}
-                onClick={() => setSelectedCommunity(community)}
-                className={`${community.color} rounded-2xl p-4 text-left transition-all hover:scale-105 active:scale-95 ${
-                  selectedCommunity.id === community.id
-                    ? "ring-2 ring-primary shadow-lg"
-                    : "shadow-sm"
+                key={forum.id}
+                onClick={() => handleForumClick(forum)}
+                className={`flex-shrink-0 w-28 h-28 ${forum.color} rounded-xl flex items-center justify-center transition-all hover:scale-105 ${
+                  selectedForum.id === forum.id ? "ring-2 ring-primary shadow-lg" : ""
                 }`}
               >
-                <div className="flex items-start gap-2 mb-2">
-                  <Users className="h-5 w-5 text-gray-700 flex-shrink-0 mt-0.5" />
-                  <h3 className="font-semibold text-sm leading-tight text-gray-800">
-                    {community.name}
-                  </h3>
+                <div className="text-center px-2">
+                  <ImageIcon className="h-7 w-7 mx-auto mb-2 text-gray-700" />
+                  <p className="text-xs font-semibold text-gray-800 leading-tight">{forum.name}</p>
                 </div>
-                <p className="text-xs text-gray-600 mb-2">{community.tagline}</p>
-                <p className="text-xs text-gray-500">{community.members} miembros</p>
               </button>
             ))}
-
-            {/* Explore/Create Community Card */}
             <button
-              onClick={handleExploreCommunities}
-              className="bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl p-4 text-left transition-all hover:scale-105 active:scale-95 shadow-sm border-2 border-dashed border-primary/30"
+              onClick={handleExploreForums}
+              className="flex-shrink-0 w-28 h-28 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center border-2 border-dashed border-primary/30 cursor-pointer hover:scale-105 transition-all"
             >
-              <div className="flex flex-col items-center justify-center h-full gap-2">
-                <Search className="h-6 w-6 text-primary" />
-                <p className="text-sm font-semibold text-center text-primary">
-                  Explorar comunidades
-                </p>
+              <div className="text-center px-2">
+                <Plus className="h-7 w-7 mx-auto mb-2 text-primary" />
+                <p className="text-xs text-primary font-semibold leading-tight">Encuentra más aquí</p>
               </div>
             </button>
           </div>
         </div>
 
-        {/* Section 2: Community Feed */}
-        <div className="mb-6">
-          <div className="mb-4">
-            <h2 className="text-xl font-bold mb-1">{selectedCommunity.name}</h2>
-            <p className="text-sm text-muted-foreground">{selectedCommunity.tagline}</p>
+        {/* Información del foro actual */}
+        <div className="px-4 py-3 space-y-3">
+          <div>
+            <h1 className="text-xl font-bold tracking-wide mb-2">FORO {selectedForum.name.toUpperCase()}</h1>
+            <div className="inline-block bg-secondary/30 px-3 py-1 rounded-full text-xs font-medium mb-2">
+              14.5k miembros
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Comunidad de apoyo para personas con {selectedForum.name.toLowerCase()}.
+            </p>
           </div>
 
-          {/* Posts List */}
-          <div className="space-y-3">
-            {currentPosts.map((post) => (
-              <Card
-                key={post.id}
-                className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => handlePostClick(post.title)}
+          <Button className="w-full" variant="outline">
+            Información relacionada
+          </Button>
+
+          {/* Moderado por */}
+          <div className="flex items-center justify-between py-2 border-t border-border">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                <User className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Moderado por</p>
+                <p className="text-xs font-semibold">Dr. Juan Pérez</p>
+              </div>
+            </div>
+            <Settings className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+
+        {/* Filtros de posts (scroll horizontal) */}
+        <div className="px-4 py-2 border-t border-border">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {FILTERS.map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  activeFilter === filter
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
               >
-                <h3 className="font-semibold text-base mb-2 leading-snug">
-                  {post.title}
-                </h3>
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <div className="flex items-center gap-3">
-                    <span>{post.author}</span>
-                    <span>•</span>
-                    <span>{post.timeAgo}</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <Heart className="h-4 w-4" />
-                      <span>{post.likes}</span>
+                {filter}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Botón AGREGAR POST */}
+        {!showForm && (
+          <div className="px-4 py-2">
+            <Button
+              onClick={handleAddPost}
+              className="w-full h-10 text-sm gap-2 shadow-lg"
+            >
+              <Plus className="h-4 w-4" />
+              AGREGAR POST
+            </Button>
+          </div>
+        )}
+
+        {/* Listado de posts (scroll vertical) */}
+        <div className="px-4 py-4 h-[350px] overflow-y-auto">
+          <div className="space-y-3 pb-20">
+            {MOCK_POSTS.map((post) => (
+              <Card key={post.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow">
+                <div onClick={() => handlePostClick(post.id)}>
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-base flex-1 pr-2">{post.title}</h3>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <User className="h-4 w-4 text-primary" />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <MessageCircle className="h-4 w-4" />
-                      <span>{post.comments}</span>
-                    </div>
                   </div>
+                  <p className="text-xs text-muted-foreground mb-2">{post.author}</p>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                    {post.content}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleLike(post.id);
+                    }}
+                    className="flex items-center gap-2 hover:scale-110 transition-transform"
+                  >
+                    <Heart
+                      className={`h-4 w-4 ${
+                        likedPosts.includes(post.id)
+                          ? "fill-primary text-primary"
+                          : "text-primary"
+                      }`}
+                    />
+                    <span className="text-sm text-muted-foreground">{post.likes}</span>
+                  </button>
                 </div>
               </Card>
             ))}
           </div>
         </div>
-      </main>
 
-      {/* Section 3: Create Post Action Bar */}
-      <div className="fixed bottom-16 left-0 right-0 bg-background border-t border-border z-30">
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          <Button
-            size="lg"
-            className="w-full h-14 text-lg gap-2"
-            onClick={handleCreatePost}
-          >
-            <PenSquare className="h-5 w-5" />
-            Crear publicación
-          </Button>
-        </div>
+        {/* Formulario de agregar post */}
+        {showForm && (
+          <div className="absolute inset-0 bg-card z-50 overflow-y-auto pb-20">
+            <div className="p-4 space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">Nuevo Post</h2>
+                <Button variant="ghost" size="sm" onClick={handleCancelPost}>
+                  Cancelar
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Título del post</label>
+                  <Input
+                    placeholder="Escribe el título..."
+                    value={formData.title}
+                    onChange={(e) => {
+                      setFormData({ ...formData, title: e.target.value });
+                      if (formErrors.title) {
+                        setFormErrors({ ...formErrors, title: "" });
+                      }
+                    }}
+                    className={formErrors.title ? "border-destructive" : ""}
+                  />
+                  {formErrors.title && (
+                    <p className="text-xs text-destructive mt-1">{formErrors.title}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Contenido</label>
+                  <Textarea
+                    placeholder="Escribe tu mensaje..."
+                    rows={6}
+                    value={formData.content}
+                    onChange={(e) => {
+                      setFormData({ ...formData, content: e.target.value });
+                      if (formErrors.content) {
+                        setFormErrors({ ...formErrors, content: "" });
+                      }
+                    }}
+                    className={formErrors.content ? "border-destructive" : ""}
+                  />
+                  {formErrors.content && (
+                    <p className="text-xs text-destructive mt-1">{formErrors.content}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Tipo de post</label>
+                  <select
+                    className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  >
+                    {POST_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Subir imágenes</label>
+                  <Button variant="outline" className="w-full justify-start gap-2" type="button">
+                    <Upload className="h-4 w-4" />
+                    Seleccionar imágenes
+                  </Button>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Subir documentos</label>
+                  <Button variant="outline" className="w-full justify-start gap-2" type="button">
+                    <FileText className="h-4 w-4" />
+                    Seleccionar documentos
+                  </Button>
+                </div>
+
+                <Button onClick={handleSubmitPost} className="w-full h-12 text-base">
+                  Agregar
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <BottomNav />
       </div>
-
-      <BottomNav />
     </div>
   );
 };
