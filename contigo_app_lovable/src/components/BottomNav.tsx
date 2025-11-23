@@ -1,5 +1,5 @@
 import { NavLink } from "@/components/NavLink";
-import { Home, Map, Users, Settings } from "lucide-react";
+import { Home, Users, Settings, UserCircle } from "lucide-react";
 
 export const BottomNav = () => {
   return (
@@ -20,8 +20,8 @@ export const BottomNav = () => {
           className="flex flex-col items-center justify-center flex-1 gap-1 py-2 rounded-lg transition-colors"
           activeClassName="text-primary bg-primary/10"
         >
-          <Map className="h-7 w-7" />
-          <span className="text-xs font-medium">Viaje</span>
+          <Users className="h-7 w-7" />
+          <span className="text-xs font-medium">Comunidad</span>
         </NavLink>
         
         <NavLink
@@ -29,7 +29,7 @@ export const BottomNav = () => {
           className="flex flex-col items-center justify-center flex-1 gap-1 py-2 rounded-lg transition-colors"
           activeClassName="text-primary bg-primary/10"
         >
-          <Users className="h-7 w-7" />
+          <UserCircle className="h-7 w-7" />
           <span className="text-xs font-medium">Equipos</span>
         </NavLink>
         
