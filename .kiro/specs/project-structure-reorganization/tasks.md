@@ -103,7 +103,13 @@
   - Identificar todos los archivos que tendrán imports afectados
   - Presentar plan al usuario para aprobación antes de ejecutar
   - _Requirements: 5.1, 5.2, 5.3_
-- [-] 9. Ejecutar movimientos de archivos según plan aprobado
+- [x] 9. Ejecutar movimientos de archivos según plan aprobado
+
+
+
+
+
+
 
 
 
@@ -137,7 +143,12 @@
   - _Requirements: 4.3, 8.1, 8.2_
 -
 
-- [-] 11. Actualizar imports en archivos de frontend/
+- [x] 11. Actualizar imports en archivos de frontend/
+
+
+
+
+
 
 
   - Actualizar imports en todos los archivos de src/frontend/components/
@@ -146,37 +157,57 @@
   - Asegurar que imports relativos y absolutos (@/) funcionen correctamente
   - _Requirements: 4.3, 8.1, 8.2_
 
+
+
+
 - [ ] 12. Actualizar imports en archivos de shared/
+
+
+
+
+
 
   - Actualizar imports en todos los archivos de src/shared/constants/
   - Verificar que archivos compartidos no tengan dependencias circulares
   - _Requirements: 4.3, 8.1, 8.2_
 
-- [ ] 13. Actualizar configuraciones para nueva estructura
+- [-] 13. Actualizar configuraciones para nueva estructura
+
+
   - Evaluar si vite.config.ts necesita alias adicionales (@frontend, @backend, @shared)
   - Evaluar si tsconfig.json necesita paths adicionales
   - Si se requieren cambios, explicar al usuario y solicitar aprobación
   - Aplicar cambios aprobados en configuraciones
   - _Requirements: 6.1, 6.2, 6.4, 6.5_
 
-- [ ] 14. Validación exhaustiva de imports
+- [x] 14. Validación exhaustiva de imports
+
+
+
   - Ejecutar TypeScript compiler en modo check para detectar imports rotos
   - Escanear todos los archivos .tsx y .ts buscando imports no resueltos
   - Reportar cualquier import roto con archivo, línea y sugerencia de corrección
   - Corregir imports rotos identificados
   - _Requirements: 8.3, 8.4_
 
+
+
+
 - [ ] 15. Validación final Fase 2
+
   - Ejecutar `npm run build` para verificar que el proyecto compila sin errores
   - Verificar que no hay errores de TypeScript
   - Ejecutar `npm run dev` y confirmar que la aplicación inicia correctamente
   - Probar navegación básica en la aplicación para verificar funcionalidad
   - Confirmar que todas las páginas cargan correctamente
+
+
   - _Requirements: 4.4, 8.3_
 
 ## CHECKPOINT FINAL
 
 - [ ] 16. Verificación completa del proyecto reorganizado
+
   - Confirmar que estructura de carpetas coincide con el diseño
   - Confirmar que todos los archivos están en sus ubicaciones correctas
   - Confirmar que no hay archivos huérfanos o duplicados
