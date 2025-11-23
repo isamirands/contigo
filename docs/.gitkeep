@@ -1,0 +1,21 @@
+# Documentación
+
+Esta carpeta contiene diagramas y documentación del proyecto.
+
+## Archivos esperados
+
+- `architecture-diagram.png` - Diagrama de arquitectura del sistema
+- `data-model-diagram.png` - Diagrama del modelo de datos (entidad-relación)
+
+## Cómo agregar los diagramas
+
+1. Crea los diagramas usando herramientas como:
+   - draw.io / diagrams.net
+   - Lucidchart
+   - Figma
+   - Mermaid
+   - PlantUML
+
+2. Exporta como PNG con buena resolución (mínimo 1200px de ancho)
+
+3. Guarda los archivos en esta carpeta con los nombres indicados arriba
