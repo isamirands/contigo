@@ -3,9 +3,8 @@ import { BottomNav } from "@/components/BottomNav";
 import { TigoWalkingStrip } from "@/components/TigoWalkingStrip";
 import { WeeklyCalendar } from "@/components/WeeklyCalendar";
 import { ActivitySliderCard } from "@/components/ActivitySliderCard";
-import { RemindersModal } from "@/components/RemindersModal";
-import { Button } from "@/components/ui/button";
-import { Pill, Droplet, Footprints, BookOpen, Plus, Bell, Moon } from "lucide-react";
+import { ActivityReminderModal } from "@/components/ActivityReminderModal";
+import { Pill, Droplet, Footprints, BookOpen, Moon } from "lucide-react";
 import { toast } from "sonner";
 import { LucideIcon } from "lucide-react";
 
@@ -92,7 +91,8 @@ const WEEK_DATA = [
 
 const Home = () => {
   const [completedActivities, setCompletedActivities] = useState<string[]>([]);
-  const [remindersModalOpen, setRemindersModalOpen] = useState(false);
+  const [reminderModalOpen, setReminderModalOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<{ id: string; title: string } | null>(null);
   // Cumulative total steps since journey started (never resets)
   const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(42); // Mock starting value
 
@@ -229,6 +229,10 @@ const Home = () => {
                 title={activity.title}
                 completed={completedActivities.includes(activity.id)}
                 onComplete={handleCompleteActivity}
+                onReminder={(id, title) => {
+                  setSelectedActivity({ id, title });
+                  setReminderModalOpen(true);
+                }}
                 owners={activity.owners}
                 colorIndex={index}
               />
@@ -236,30 +240,20 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Section 4: Reminders Button - Fixed at bottom */}
-        <div className="flex-shrink-0 px-4 pb-6 pt-4 bg-background border-t border-border">
-          <Button 
-            variant="secondary" 
-            size="lg" 
-            className="w-full h-14 text-lg"
-            onClick={() => setRemindersModalOpen(true)}
-          >
-            <Bell className="h-6 w-6" />
-            Recordatorios
-          </Button>
-        </div>
       </main>
 
       <BottomNav />
 
-      {/* Reminders Modal */}
-      <RemindersModal
-        open={remindersModalOpen}
-        onOpenChange={setRemindersModalOpen}
-        userActivities={CURRENT_USER_ACTIVITIES}
-        teamMembers={TEAM_MEMBERS}
-        isTeam={isTeam}
-      />
+      {/* Activity Reminder Modal */}
+      {selectedActivity && (
+        <ActivityReminderModal
+          open={reminderModalOpen}
+          onOpenChange={setReminderModalOpen}
+          activityTitle={selectedActivity.title}
+          teamMembers={TEAM_MEMBERS.map(m => ({ id: m.id, name: m.name }))}
+          isTeam={isTeam}
+        />
+      )}
     </div>
   );
 };
