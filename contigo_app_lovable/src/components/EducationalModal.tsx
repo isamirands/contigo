@@ -7,10 +7,9 @@ import { EDUCATIONAL_CONTENT } from "@/data/educationalContent";
 interface EducationalModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onComplete: () => void;
 }
 
-export const EducationalModal = ({ open, onOpenChange, onComplete }: EducationalModalProps) => {
+export const EducationalModal = ({ open, onOpenChange }: EducationalModalProps) => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioStarted, setAudioStarted] = useState(false);
@@ -56,11 +55,54 @@ export const EducationalModal = ({ open, onOpenChange, onComplete }: Educational
 
   const handleStartAudio = () => {
     setAudioStarted(true);
-    // Simular audio para MVP - en producción se usará el archivo de audio real
-    // audioRef.current = new Audio('/path-to-audio-file.mp3');
-    
-    // Simulación: cambiar slides cada 60 segundos
     setIsPlaying(true);
+    
+    // Intentar cargar el audio real
+    try {
+      audioRef.current = new Audio('/audio/hipoglucemia-hiperglucemia.wav');
+      
+      // Evento cuando el audio se actualiza
+      audioRef.current.addEventListener('timeupdate', () => {
+        if (!audioRef.current) return;
+        
+        const currentTime = Math.floor(audioRef.current.currentTime);
+        
+        // Buscar el slide correspondiente según el tiempo actual
+        const slideIndex = audioSync.findIndex(
+          sync => currentTime >= sync.startAt && currentTime <= sync.endAt
+        );
+        
+        if (slideIndex !== -1 && slideIndex !== currentSlideIndex) {
+          setCurrentSlideIndex(slideIndex);
+        }
+      });
+      
+      // Evento cuando el audio termina
+      audioRef.current.addEventListener('ended', () => {
+        stopAudio();
+      });
+      
+      // Evento de error (si el archivo no existe, usar simulación)
+      audioRef.current.addEventListener('error', () => {
+        console.warn('Audio file not found, using simulation');
+        useFallbackSimulation();
+      });
+      
+      // Reproducir el audio
+      audioRef.current.play().catch(() => {
+        // Si falla la reproducción, usar simulación
+        useFallbackSimulation();
+      });
+      
+    } catch (error) {
+      // Si hay error, usar simulación
+      console.warn('Error loading audio, using simulation');
+      useFallbackSimulation();
+    }
+  };
+
+  // Función de respaldo: simulación para MVP
+  const useFallbackSimulation = () => {
     let currentTime = 0;
     
     timeUpdateIntervalRef.current = setInterval(() => {
@@ -78,8 +120,6 @@ export const EducationalModal = ({ open, onOpenChange, onComplete }: Educational
       // Detener cuando termine el último slide
       if (currentTime > audioSync[audioSync.length - 1].endAt) {
         stopAudio();
-        // Marcar como completado cuando termine el audio
-        onComplete();
       }
     }, 1000);
   };
@@ -254,27 +294,13 @@ export const EducationalModal = ({ open, onOpenChange, onComplete }: Educational
               Deja que tu Tigo te lo explique
             </Button>
           ) : (
-            <div className="space-y-2">
-              <div className="text-center py-2">
-                <div className="flex items-center justify-center gap-2 text-primary">
-                  <Volume2 className="h-4 w-4 animate-pulse" />
-                  <span className="text-sm font-medium">
-                    {isPlaying ? "Reproduciendo..." : "Audio finalizado"}
-                  </span>
-                </div>
+            <div className="text-center py-2">
+              <div className="flex items-center justify-center gap-2 text-primary">
+                <Volume2 className="h-4 w-4 animate-pulse" />
+                <span className="text-sm font-medium">
+                  {isPlaying ? "Reproduciendo..." : "Audio finalizado"}
+                </span>
               </div>
-              {!isPlaying && (
-                <Button
-                  size="lg"
-                  className="w-full h-12 text-sm font-semibold bg-success hover:bg-success/90"
-                  onClick={() => {
-                    onComplete();
-                    onOpenChange(false);
-                  }}
-                >
-                  ✓ Marcar como leído
-                </Button>
-              )}
             </div>
           )}
         </div>

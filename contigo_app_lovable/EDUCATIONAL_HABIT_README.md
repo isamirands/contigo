@@ -8,8 +8,9 @@ Se ha implementado un comportamiento especial para el hábito **"Leer artículo 
 
 ### Hábito Educativo Específico
 - **Nombre exacto**: "Leer artículo educativo: Hipoglucemia e hiperglucemia"
-- **Comportamiento al hacer tap**: NO se marca como completado directamente
-- En su lugar, se abre un modal educativo con contenido en slides
+- **Comportamiento al hacer tap**: NO hace nada (deshabilitado)
+- **Comportamiento al hacer slide**: Abre el modal educativo (NO marca como completado)
+- **Marcado como completado**: Solo al cerrar el modal (botón X o clic fuera)
 
 ### Flujo Educativo
 
@@ -29,13 +30,12 @@ Se ha implementado un comportamiento especial para el hábito **"Leer artículo 
    - Para MVP: simulación con intervalos de 60 segundos por slide
    - En producción: usar archivo de audio real con `currentTime`
 
-4. **Cierre del modal**
-   - Si se cierra el modal, el audio se detiene automáticamente
-   - El progreso se reinicia
-
-5. **Completar el hábito**
-   - El hábito se marca como completado cuando el audio termina
-   - También se puede completar manualmente después de revisar el contenido
+4. **Cierre del modal y completado**
+   - Al cerrar el modal (botón X, clic fuera, o cualquier acción de cierre):
+     - El audio se detiene automáticamente
+     - El hábito se marca como COMPLETADO
+   - No es necesario terminar el audio ni ver todos los slides
+   - El criterio de completado es: abrir y cerrar el modal
 
 ### Otros Hábitos
 - Mantienen el comportamiento estándar de deslizar para completar
@@ -67,43 +67,38 @@ Se ha implementado un comportamiento especial para el hábito **"Leer artículo 
    - Actualizado el hábito existente de Ana "Leer artículo educativo" con el título completo
    - Maneja apertura/cierre del modal y completado del hábito
 
-## Próximos Pasos (Producción)
+## Integración de Audio Real
 
-### Integrar Audio Real
-1. Subir archivo de audio a `/public/audio/`
-2. En `EducationalModal.tsx`, reemplazar la simulación:
-   ```typescript
-   audioRef.current = new Audio('/audio/hipoglucemia-hiperglucemia.mp3');
-   ```
-3. Usar `audioRef.current.currentTime` para sincronizar slides
-4. Escuchar evento `timeupdate` del audio
+### Ubicación del Archivo
+Sube tu archivo de audio aquí:
+```
+contigo_app_lovable/public/audio/hipoglucemia-hiperglucemia.wav
+```
 
-### Ejemplo de Integración Real
+### Formato Recomendado
+- **Formato**: WAV o MP3
+- **Duración**: ~240 segundos (4 minutos)
+- **Sincronización**:
+  - Slide 1: 0-59 segundos
+  - Slide 2: 60-119 segundos
+  - Slide 3: 120-179 segundos
+  - Slide 4: 180-240 segundos
+
+### Funcionamiento Automático
+El código ya está preparado para:
+1. ✅ Intentar cargar el audio real desde `/audio/hipoglucemia-hiperglucemia.wav`
+2. ✅ Sincronizar slides automáticamente con el tiempo del audio
+3. ✅ Si el archivo no existe, usar simulación como respaldo
+4. ✅ Detectar cuando el audio termina
+
+### Cambiar a MP3
+Si usas MP3 en lugar de WAV, solo cambia el nombre del archivo a:
+```
+hipoglucemia-hiperglucemia.mp3
+```
+Y actualiza la línea en `EducationalModal.tsx`:
 ```typescript
-const handleStartAudio = () => {
-  setAudioStarted(true);
-  audioRef.current = new Audio('/audio/hipoglucemia-hiperglucemia.mp3');
-  
-  audioRef.current.addEventListener('timeupdate', () => {
-    const currentTime = audioRef.current!.currentTime;
-    
-    const slideIndex = audioSync.findIndex(
-      sync => currentTime >= sync.startAt && currentTime <= sync.endAt
-    );
-    
-    if (slideIndex !== -1 && slideIndex !== currentSlideIndex) {
-      setCurrentSlideIndex(slideIndex);
-    }
-  });
-  
-  audioRef.current.addEventListener('ended', () => {
-    stopAudio();
-    onComplete();
-  });
-  
-  audioRef.current.play();
-  setIsPlaying(true);
-};
+audioRef.current = new Audio('/audio/hipoglucemia-hiperglucemia.mp3');
 ```
 
 ## Notas Importantes

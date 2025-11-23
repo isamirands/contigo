@@ -162,11 +162,12 @@ const Home = () => {
     setEducationalModalOpen(true);
   };
 
-  const handleEducationalComplete = () => {
-    if (educationalActivityId && !completedActivities.includes(educationalActivityId)) {
+  const handleEducationalClose = (open: boolean) => {
+    // Cuando el modal se cierra (open = false), marcar como completado
+    if (!open && educationalActivityId && !completedActivities.includes(educationalActivityId)) {
       handleCompleteActivity(educationalActivityId);
     }
-    setEducationalModalOpen(false);
+    setEducationalModalOpen(open);
   };
 
   // Calculate progress based on activity pool
@@ -290,8 +291,7 @@ const Home = () => {
       {/* Educational Modal */}
       <EducationalModal
         open={educationalModalOpen}
-        onOpenChange={setEducationalModalOpen}
-        onComplete={handleEducationalComplete}
+        onOpenChange={handleEducationalClose}
       />
     </div>
   );
