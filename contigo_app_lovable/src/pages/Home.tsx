@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { TigoWalkingStrip } from "@/components/TigoWalkingStrip";
@@ -18,7 +18,7 @@ interface Activity {
   owners: Array<{ name: string; avatar?: string }>;
 }
 
-interface TeamMember {
+interface TeamMemberData {
   id: string;
   name: string;
   activities: Activity[];
@@ -46,39 +46,57 @@ const CURRENT_USER_ACTIVITIES: Activity[] = [
   },
 ];
 
+// Get team members from localStorage (synced with Teams page)
+const getTeamMembersFromStorage = (): string[] => {
+  try {
+    const stored = localStorage.getItem('teamMembers');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error('Error reading team members from storage:', e);
+  }
+  // Default team members
+  return ["user1", "user2"];
+};
+
 // Mock data: Team members with their activities
 // Set to empty array to test solo mode, or populate for team mode
-const TEAM_MEMBERS: TeamMember[] = [
-  {
-    id: "user1",
-    name: "Tú",
-    activities: CURRENT_USER_ACTIVITIES,
-  },
-  {
-    id: "user2",
-    name: "Ana",
-    activities: [
-      {
-        id: "user2-medication-evening",
-        icon: Pill,
-        title: "Medicación nocturna",
-        owners: [{ name: "Ana", avatar: "" }],
-      },
-      {
-        id: "user2-reading",
-        icon: BookOpen,
-        title: "Leer artículo educativo",
-        owners: [{ name: "Ana", avatar: "" }],
-      },
-      {
-        id: "user2-meditation",
-        icon: Moon,
-        title: "Meditación 10 min",
-        owners: [{ name: "Ana", avatar: "" }],
-      },
-    ],
-  },
-];
+const buildTeamMembers = (memberIds: string[]): TeamMemberData[] => {
+  const allMembers: { [key: string]: TeamMemberData } = {
+    "user1": {
+      id: "user1",
+      name: "Tú",
+      activities: CURRENT_USER_ACTIVITIES,
+    },
+    "user2": {
+      id: "user2",
+      name: "Ana",
+      activities: [
+        {
+          id: "user2-medication-evening",
+          icon: Pill,
+          title: "Medicación nocturna",
+          owners: [{ name: "Ana", avatar: "" }],
+        },
+        {
+          id: "user2-reading",
+          icon: BookOpen,
+          title: "Leer artículo educativo",
+          owners: [{ name: "Ana", avatar: "" }],
+        },
+        {
+          id: "user2-meditation",
+          icon: Moon,
+          title: "Meditación 10 min",
+          owners: [{ name: "Ana", avatar: "" }],
+        },
+      ],
+    },
+  };
+  
+  return memberIds.map(id => allMembers[id]).filter(Boolean);
+};
 
 // Dummy week data - showing last 7 days with activity completion
 const WEEK_DATA = [
@@ -103,6 +121,37 @@ const Home = () => {
   const [showCelebration, setShowCelebration] = useState(false);
   // Cumulative total steps since journey started (never resets)
   const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(42); // Mock starting value
+  
+  // Team members state - synced with localStorage
+  const [teamMemberIds, setTeamMemberIds] = useState<string[]>(getTeamMembersFromStorage());
+  const TEAM_MEMBERS = useMemo(() => buildTeamMembers(teamMemberIds), [teamMemberIds]);
+
+  // Listen for team member changes from Teams page
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'teamMembers' && e.newValue) {
+        try {
+          const newIds = JSON.parse(e.newValue);
+          setTeamMemberIds(newIds);
+        } catch (err) {
+          console.error('Error parsing team members:', err);
+        }
+      }
+    };
+    
+    // Also listen for custom event (for same-window updates)
+    const handleTeamUpdate = () => {
+      setTeamMemberIds(getTeamMembersFromStorage());
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('teamMembersUpdated', handleTeamUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('teamMembersUpdated', handleTeamUpdate);
+    };
+  }, []);
 
   // Determine if user is in a team (team has 2+ members)
   const isTeam = TEAM_MEMBERS.length >= 2;
