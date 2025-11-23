@@ -19,16 +19,7 @@ interface ActivitySliderCardProps {
   title: string;
   completed: boolean;
   onComplete: (id: string) => void;
-  owners?: Array<{ name: string; avatar?: string }>;
-  colorIndex?: number;
-}
-
-interface ActivitySliderCardProps {
-  id: string;
-  icon: LucideIcon;
-  title: string;
-  completed: boolean;
-  onComplete: (id: string) => void;
+  onEducationalClick?: () => void;
   onReminder?: (id: string, title: string) => void;
   owners?: Array<{ name: string; avatar?: string }>;
   colorIndex?: number;
@@ -40,19 +31,18 @@ export const ActivitySliderCard = ({
   title, 
   completed, 
   onComplete,
+  onEducationalClick,
   onReminder,
   owners,
   colorIndex = 0
 }: ActivitySliderCardProps) => {
   const [progress, setProgress] = useState(completed ? 100 : 0);
-  const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef(0);
   const startYRef = useRef(0);
   const startProgressRef = useRef(0);
   const isHorizontalGestureRef = useRef(false);
-  const swipeDirectionRef = useRef<"left" | "right" | null>(null);
 
   // Get color from palette
   const colorScheme = PASTEL_COLORS[colorIndex % PASTEL_COLORS.length];

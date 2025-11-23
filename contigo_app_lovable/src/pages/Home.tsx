@@ -6,6 +6,7 @@ import { WeeklyCalendar } from "@/components/WeeklyCalendar";
 import { ActivitySliderCard } from "@/components/ActivitySliderCard";
 import { ActivityReminderModal } from "@/components/ActivityReminderModal";
 import { CompletionCelebration } from "@/components/CompletionCelebration";
+import { EducationalModal } from "@/components/EducationalModal";
 import { Pill, Droplet, Footprints, BookOpen, Moon, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { LucideIcon } from "lucide-react";
@@ -101,6 +102,8 @@ const Home = () => {
     owners?: Array<{ name: string; avatar?: string }>;
   } | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [educationalModalOpen, setEducationalModalOpen] = useState(false);
+  const [educationalActivityId, setEducationalActivityId] = useState<string | null>(null);
   // Cumulative total steps since journey started (never resets)
   const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(42); // Mock starting value
 
@@ -152,6 +155,18 @@ const Home = () => {
       // Show celebration overlay
       setShowCelebration(true);
     }
+  };
+
+  const handleEducationalClick = (id: string) => {
+    setEducationalActivityId(id);
+    setEducationalModalOpen(true);
+  };
+
+  const handleEducationalComplete = () => {
+    if (educationalActivityId && !completedActivities.includes(educationalActivityId)) {
+      handleCompleteActivity(educationalActivityId);
+    }
+    setEducationalModalOpen(false);
   };
 
   // Calculate progress based on activity pool
@@ -239,6 +254,7 @@ const Home = () => {
                 title={activity.title}
                 completed={completedActivities.includes(activity.id)}
                 onComplete={handleCompleteActivity}
+                onEducationalClick={() => handleEducationalClick(activity.id)}
                 onReminder={(id, title) => {
                   setSelectedActivity({ id, title, owners: activity.owners });
                   setReminderModalOpen(true);
@@ -269,6 +285,13 @@ const Home = () => {
       <CompletionCelebration
         show={showCelebration}
         onComplete={() => setShowCelebration(false)}
+      />
+
+      {/* Educational Modal */}
+      <EducationalModal
+        open={educationalModalOpen}
+        onOpenChange={setEducationalModalOpen}
+        onComplete={handleEducationalComplete}
       />
     </div>
   );
