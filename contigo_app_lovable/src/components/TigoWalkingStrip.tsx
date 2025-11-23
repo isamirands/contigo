@@ -1,5 +1,5 @@
 import tigoPenguin from "@/assets/tigo-walking-blue-penguin.png";
-import TigoJourneyBg from "@/assets/Sendero-penguin.png";
+import TigoJourneyBg from "@/assets/Sendero-bosque-penguin.png";
 import { Footprints } from "lucide-react";
 
 interface TeamMember {
