@@ -1,5 +1,5 @@
 import { NavLink } from "@/components/NavLink";
-import { Home, Compass, UsersRound, Settings, Plus } from "lucide-react";
+import { Home, Compass, UsersRound, BarChart3, Plus } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export const BottomNav = () => {
@@ -48,11 +48,11 @@ export const BottomNav = () => {
         </NavLink>
         
         <NavLink
-          to="/settings"
+          to="/metrics"
           className="flex items-center justify-center flex-1 p-3 rounded-lg transition-colors"
           activeClassName="text-primary bg-primary/10"
         >
-          <Settings className="h-7 w-7" />
+          <BarChart3 className="h-7 w-7" />
         </NavLink>
       </div>
     </nav>

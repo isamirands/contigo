@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { TigoWalkingStrip } from "@/components/TigoWalkingStrip";
 import { WeeklyCalendar } from "@/components/WeeklyCalendar";
 import { ActivitySliderCard } from "@/components/ActivitySliderCard";
 import { ActivityReminderModal } from "@/components/ActivityReminderModal";
-import { Pill, Droplet, Footprints, BookOpen, Moon } from "lucide-react";
+import { Pill, Droplet, Footprints, BookOpen, Moon, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { LucideIcon } from "lucide-react";
 
@@ -90,6 +91,7 @@ const WEEK_DATA = [
 ];
 
 const Home = () => {
+  const navigate = useNavigate();
   const [completedActivities, setCompletedActivities] = useState<string[]>([]);
   const [reminderModalOpen, setReminderModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<{ id: string; title: string } | null>(null);
@@ -186,9 +188,18 @@ const Home = () => {
     <div className="h-screen flex flex-col bg-background">
       {/* Header - Fixed at top */}
       <header className="bg-card border-b border-border flex-shrink-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-primary">Contigo</h1>
-          <p className="text-sm text-muted-foreground mt-1">Juntos en tu camino</p>
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-primary">Contigo</h1>
+            <p className="text-sm text-muted-foreground mt-1">Juntos en tu camino</p>
+          </div>
+          <button
+            onClick={() => navigate("/settings")}
+            className="p-2 hover:bg-secondary rounded-full transition-colors"
+            aria-label="Ajustes"
+          >
+            <Settings className="h-5 w-5 text-muted-foreground" />
+          </button>
         </div>
       </header>
 
