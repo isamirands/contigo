@@ -202,6 +202,8 @@
   - Confirmar que todas las páginas cargan correctamente
 
 
+
+
   - _Requirements: 4.4, 8.3_
 
 ## CHECKPOINT FINAL
