@@ -48,7 +48,7 @@ export const ActivitySliderCard = ({
   const colorScheme = PASTEL_COLORS[colorIndex % PASTEL_COLORS.length];
   
   // Check if this is the educational habit
-  const isEducationalHabit = title === "Leer artículo educativo: Hipoglucemia e hiperglucemia";
+  const isEducationalHabit = title === "Leer artículo educativo";
 
   useEffect(() => {
     if (completed) {

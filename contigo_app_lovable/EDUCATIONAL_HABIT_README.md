@@ -2,15 +2,18 @@
 
 ## Descripción
 
-Se ha implementado un comportamiento especial para el hábito **"Leer artículo educativo: Hipoglucemia e hiperglucemia"**.
+Se ha implementado un comportamiento especial para el hábito **"Leer artículo educativo"**.
+
+El título completo del artículo ("Hipoglucemia e hiperglucemia") se muestra en el header del modal educativo.
 
 ## Comportamiento
 
 ### Hábito Educativo Específico
-- **Nombre exacto**: "Leer artículo educativo: Hipoglucemia e hiperglucemia"
+- **Nombre del hábito**: "Leer artículo educativo"
+- **Título del artículo**: "Hipoglucemia e hiperglucemia" (se muestra en el modal)
 - **Comportamiento al hacer tap**: NO hace nada (deshabilitado)
 - **Comportamiento al hacer slide**: Abre el modal educativo (NO marca como completado)
-- **Marcado como completado**: Solo al cerrar el modal (botón X o clic fuera)
+- **Marcado como completado**: Solo al presionar "Confirmar lectura" en el último slide o después de terminar el audio
 
 ### Flujo Educativo
 

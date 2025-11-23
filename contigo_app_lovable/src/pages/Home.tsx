@@ -83,7 +83,7 @@ const buildTeamMembers = (memberIds: string[]): TeamMemberData[] => {
         {
           id: "user2-reading",
           icon: BookOpen,
-          title: "Leer artículo educativo: Hipoglucemia e hiperglucemia",
+          title: "Leer artículo educativo",
           owners: [{ name: "Ana", avatar: "" }],
         },
         {
@@ -211,12 +211,12 @@ const Home = () => {
     setEducationalModalOpen(true);
   };
 
-  const handleEducationalClose = (open: boolean) => {
-    // Cuando el modal se cierra (open = false), marcar como completado
-    if (!open && educationalActivityId && !completedActivities.includes(educationalActivityId)) {
+  const handleEducationalConfirm = () => {
+    // Solo se llama cuando el usuario presiona "Confirmar lectura"
+    if (educationalActivityId && !completedActivities.includes(educationalActivityId)) {
       handleCompleteActivity(educationalActivityId);
     }
-    setEducationalModalOpen(open);
+    setEducationalModalOpen(false);
   };
 
   // Calculate progress based on activity pool
@@ -340,7 +340,8 @@ const Home = () => {
       {/* Educational Modal */}
       <EducationalModal
         open={educationalModalOpen}
-        onOpenChange={handleEducationalClose}
+        onOpenChange={setEducationalModalOpen}
+        onConfirm={handleEducationalConfirm}
       />
     </div>
   );
