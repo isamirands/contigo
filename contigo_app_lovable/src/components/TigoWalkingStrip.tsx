@@ -20,25 +20,27 @@ export const TigoWalkingStrip = ({ steps, progress, teamMembers = [] }: TigoWalk
 
   return (
     <div 
-      className="bg-gradient-to-br from-secondary/30 to-accent/20 rounded-2xl p-6 relative overflow-hidden"
+      className="bg-gradient-to-br from-secondary/30 to-accent/20 py-6 relative overflow-hidden"
       style={{ minHeight: '200px' }}
     >
-      {/* Step counter */}
-      <div className="absolute top-4 right-4 bg-card/90 rounded-full px-4 py-2 flex items-center gap-2 shadow-sm">
-        <Footprints className="h-5 w-5 text-primary" />
-        <span className="text-lg font-semibold">
-          {displaySteps} pasos {isTeam ? 'equipo' : 'hoy'}
-        </span>
-      </div>
-
-      {/* Walking path */}
-      <div className="mt-16 mb-8">
-        <div className="relative h-2 bg-muted rounded-full">
-          <div 
-            className="absolute h-full bg-primary rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
+      {/* Content container - centered with max width */}
+      <div className="max-w-2xl mx-auto px-4 relative">
+        {/* Step counter */}
+        <div className="absolute top-0 right-4 bg-card/90 rounded-full px-4 py-2 flex items-center gap-2 shadow-sm">
+          <Footprints className="h-5 w-5 text-primary" />
+          <span className="text-lg font-semibold">
+            {displaySteps} pasos {isTeam ? 'equipo' : 'hoy'}
+          </span>
         </div>
+
+        {/* Walking path */}
+        <div className="mt-16 mb-8">
+          <div className="relative h-2 bg-muted rounded-full">
+            <div 
+              className="absolute h-full bg-primary rounded-full transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         
         {/* Single Tigo (no team) */}
         {!isTeam && (
@@ -98,9 +100,10 @@ export const TigoWalkingStrip = ({ steps, progress, teamMembers = [] }: TigoWalk
         )}
       </div>
 
-      <p className="text-center text-sm text-muted-foreground mt-4">
-        {isTeam ? 'Avancen juntos completando actividades' : 'Completa actividades para avanzar'}
-      </p>
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          {isTeam ? 'Avancen juntos completando actividades' : 'Completa actividades para avanzar'}
+        </p>
+      </div>
     </div>
   );
 };

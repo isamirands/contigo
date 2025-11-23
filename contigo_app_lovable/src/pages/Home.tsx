@@ -188,17 +188,17 @@ const Home = () => {
         </div>
       </header>
 
+      {/* Section 1: Tigo Walking Strip - Full-width strip at top */}
+      <div className="flex-shrink-0">
+        <TigoWalkingStrip 
+          steps={teamSteps} 
+          progress={progress} 
+          teamMembers={tigoTeamMembers}
+        />
+      </div>
+
       {/* Main content - Flex column that fills remaining space */}
       <main className="flex-1 flex flex-col max-w-2xl mx-auto w-full overflow-hidden">
-        {/* Section 1: Tigo Walking Strip - Fixed at top */}
-        <div className="flex-shrink-0 px-4 pt-6">
-          <TigoWalkingStrip 
-            steps={teamSteps} 
-            progress={progress} 
-            teamMembers={tigoTeamMembers}
-          />
-        </div>
-
         {/* Section 2: Weekly Calendar - Fixed below Tigo */}
         <div className="flex-shrink-0 px-4 pt-6">
           <WeeklyCalendar 
