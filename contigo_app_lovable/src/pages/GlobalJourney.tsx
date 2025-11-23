@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import tigoPenguin from "@/assets/tigo-walking-blue-penguin.png";
+import EarthImage from "@/assets/Earth-2.png";
 
 interface TimelineLocation {
   id: string;
@@ -48,6 +49,10 @@ const TEAM_MEMBERS = [
   { id: "user2", name: "Ana" },
 ];
 
+// Earth size constant - reduced by ~15% from 280px
+const EARTH_SIZE = 238; // Fixed size in pixels
+const PENGUIN_SIZE = 79; // Fixed penguin size
+
 const GlobalJourney = () => {
   const navigate = useNavigate();
   
@@ -56,6 +61,12 @@ const GlobalJourney = () => {
   
   // Current location
   const currentLocation = TIMELINE_LOCATIONS.find(loc => loc.status === "current");
+  
+  // Earth and penguin positioning calculations
+  const earthRadius = EARTH_SIZE / 2; // 119px
+  // Penguin center radius: adjusted to be 13% closer (87% of doubled radius)
+  const originalRadius = earthRadius - PENGUIN_SIZE / 2;
+  const penguinCenterRadius = (originalRadius * 2) * 0.87;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-background">
@@ -104,74 +115,81 @@ const GlobalJourney = () => {
           </p>
         </div>
 
-        {/* Earth */}
-        <div className="relative z-10 flex justify-center items-center py-8">
-          <div className="relative">
-            {/* Planet Earth */}
-            <div
-              className="rounded-full bg-gradient-to-br from-blue-400 via-green-400 to-blue-500 shadow-2xl relative overflow-hidden"
+        {/* Earth - with extra vertical spacing */}
+        <section 
+          className="relative z-10"
+          style={{
+            marginTop: "36px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          {/* Earth wrapper with fixed size and relative positioning */}
+          <div 
+            className="earth-wrapper relative"
+            style={{ 
+              width: `${EARTH_SIZE}px`, 
+              height: `${EARTH_SIZE}px`,
+              margin: "0 auto"
+            }}
+          >
+            {/* Planet Earth - New Image */}
+            <img
+              src={EarthImage}
+              alt="Planet Earth"
+              className="drop-shadow-2xl"
               style={{
-                width: "280px",
-                height: "280px",
-                boxShadow: "0 0 60px rgba(59, 130, 246, 0.5), inset -20px -20px 40px rgba(0, 0, 0, 0.3)",
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                filter: "drop-shadow(0 0 60px rgba(59, 130, 246, 0.4))",
               }}
-            >
-              {/* Continents overlay (simplified) */}
-              <div className="absolute inset-0 opacity-40">
-                <div className="absolute top-1/4 left-1/4 w-16 h-12 bg-green-600 rounded-full transform -rotate-12" />
-                <div className="absolute top-1/3 right-1/4 w-20 h-16 bg-green-600 rounded-full transform rotate-45" />
-                <div className="absolute bottom-1/3 left-1/3 w-14 h-10 bg-green-600 rounded-full" />
-              </div>
-              
-              {/* Clouds */}
-              <div className="absolute inset-0 opacity-30">
-                <div className="absolute top-1/4 right-1/3 w-12 h-6 bg-white rounded-full blur-sm" />
-                <div className="absolute bottom-1/3 left-1/4 w-10 h-5 bg-white rounded-full blur-sm" />
-              </div>
-            </div>
+            />
 
-            {/* Tigos walking on the left side of Earth (South to North path) */}
-            <div className="absolute inset-0">
-              {TEAM_MEMBERS.map((member, index) => {
-                // Calculate position on left arc from bottom (South) to top (North)
-                // Progress 0% = bottom-left, 100% = top-left
-                const angle = 180 + (progress / 100) * 90; // 180° (bottom) to 270° (left-top)
-                const radius = 140 + 40; // Earth radius + offset
-                const x = Math.cos((angle * Math.PI) / 180) * radius;
-                const y = Math.sin((angle * Math.PI) / 180) * radius;
-                
-                // Slight offset for multiple members
-                const memberOffset = index * 8;
-                
-                return (
-                  <div
-                    key={member.id}
-                    className="absolute"
-                    style={{
-                      left: `calc(50% + ${x}px)`,
-                      top: `calc(50% + ${y}px)`,
-                      transform: `translate(-50%, -50%) translateY(${memberOffset}px)`,
-                    }}
-                  >
-                    <img
-                      src={tigoPenguin}
-                      alt={`Tigo de ${member.name}`}
-                      className="object-contain drop-shadow-lg"
-                      style={{
-                        width: "79px",
-                        height: "79px",
-                        minWidth: "79px",
-                        minHeight: "79px",
-                        maxWidth: "79px",
-                        maxHeight: "79px",
-                      }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+            {/* Tigos walking around Earth following the curvature */}
+            {TEAM_MEMBERS.map((member, index) => {
+              // Calculate position on left arc from bottom (South) to top (North)
+              // Progress 0% = South Pole (bottom), 100% = North Pole (top)
+              // Map to angle: 180° (bottom/South) to 270° (left/top/North)
+              const baseAngle = 180 + (progress / 100) * 90; // 180° to 270°
+              const angleRad = (baseAngle * Math.PI) / 180;
+              
+              // Add slight radial offset for multiple members (in pixels)
+              const memberRadialOffset = index * 8; // pixels
+              const currentRadius = penguinCenterRadius + memberRadialOffset;
+              
+              // Calculate position of penguin CENTER using polar coordinates
+              const centerX = earthRadius; // Center of Earth container
+              const centerY = earthRadius;
+              const penguinCenterX = centerX + Math.cos(angleRad) * currentRadius;
+              const penguinCenterY = centerY + Math.sin(angleRad) * currentRadius;
+              
+              // Position penguin so its center is at the calculated point
+              const penguinLeft = penguinCenterX - PENGUIN_SIZE / 2;
+              const penguinTop = penguinCenterY - PENGUIN_SIZE / 2;
+              
+              // Rotation: tangent to circle is angle + 90°
+              const penguinRotation = baseAngle + 90;
+              
+              return (
+                <img
+                  key={member.id}
+                  src={tigoPenguin}
+                  alt={`Tigo de ${member.name}`}
+                  className="absolute object-contain drop-shadow-lg"
+                  style={{
+                    width: `${PENGUIN_SIZE}px`,
+                    height: `${PENGUIN_SIZE}px`,
+                    left: `${penguinLeft}px`,
+                    top: `${penguinTop}px`,
+                    transform: `rotate(${penguinRotation}deg)`,
+                    transformOrigin: "center center",
+                  }}
+                />
+              );
+            })}
           </div>
-        </div>
+        </section>
       </div>
 
       {/* Timeline Section */}
