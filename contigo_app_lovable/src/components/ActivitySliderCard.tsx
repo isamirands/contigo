@@ -19,16 +19,7 @@ interface ActivitySliderCardProps {
   title: string;
   completed: boolean;
   onComplete: (id: string) => void;
-  owners?: Array<{ name: string; avatar?: string }>;
-  colorIndex?: number;
-}
-
-interface ActivitySliderCardProps {
-  id: string;
-  icon: LucideIcon;
-  title: string;
-  completed: boolean;
-  onComplete: (id: string) => void;
+  onEducationalClick?: () => void;
   onReminder?: (id: string, title: string) => void;
   owners?: Array<{ name: string; avatar?: string }>;
   colorIndex?: number;
@@ -40,22 +31,24 @@ export const ActivitySliderCard = ({
   title, 
   completed, 
   onComplete,
+  onEducationalClick,
   onReminder,
   owners,
   colorIndex = 0
 }: ActivitySliderCardProps) => {
   const [progress, setProgress] = useState(completed ? 100 : 0);
-  const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef(0);
   const startYRef = useRef(0);
   const startProgressRef = useRef(0);
   const isHorizontalGestureRef = useRef(false);
-  const swipeDirectionRef = useRef<"left" | "right" | null>(null);
 
   // Get color from palette
   const colorScheme = PASTEL_COLORS[colorIndex % PASTEL_COLORS.length];
+  
+  // Check if this is the educational habit
+  const isEducationalHabit = title === "Leer artículo educativo: Hipoglucemia e hiperglucemia";
 
   useEffect(() => {
     if (completed) {
@@ -65,6 +58,19 @@ export const ActivitySliderCard = ({
 
   const handleStart = (clientX: number, clientY: number) => {
     if (completed) return;
+    
+    // For educational habit, don't do anything on tap/click
+    // Only slide gesture will open the modal
+    if (isEducationalHabit) {
+      // Start tracking for slide gesture
+      startXRef.current = clientX;
+      startYRef.current = clientY;
+      startProgressRef.current = 0; // Always start from 0 for educational habit
+      isHorizontalGestureRef.current = false;
+      setIsDragging(true);
+      return;
+    }
+    
     startXRef.current = clientX;
     startYRef.current = clientY;
     startProgressRef.current = progress;
@@ -85,7 +91,7 @@ export const ActivitySliderCard = ({
         setIsDragging(false);
         return;
       }
-      // Gesture is horizontal, proceed with slide-to-complete
+      // Gesture is horizontal
       isHorizontalGestureRef.current = true;
     }
     
@@ -93,8 +99,15 @@ export const ActivitySliderCard = ({
     if (isHorizontalGestureRef.current) {
       const cardWidth = cardRef.current.offsetWidth;
       const deltaProgress = (deltaX / cardWidth) * 100;
-      const newProgress = Math.max(0, Math.min(100, startProgressRef.current + deltaProgress));
-      setProgress(newProgress);
+      
+      // For educational habit, show visual feedback but don't complete
+      if (isEducationalHabit) {
+        const newProgress = Math.max(0, Math.min(50, deltaProgress)); // Max 50% to show it won't complete
+        setProgress(newProgress);
+      } else {
+        const newProgress = Math.max(0, Math.min(100, startProgressRef.current + deltaProgress));
+        setProgress(newProgress);
+      }
     }
   };
 
@@ -102,6 +115,18 @@ export const ActivitySliderCard = ({
     if (!isDragging || completed) return;
     setIsDragging(false);
     
+    // For educational habit: slide opens modal, never completes
+    if (isEducationalHabit) {
+      if (progress > 20 && onEducationalClick) {
+        // Slide detected, open modal
+        onEducationalClick();
+      }
+      // Always reset progress for educational habit
+      setProgress(0);
+      return;
+    }
+    
+    // For other habits: normal slide-to-complete behavior
     if (progress >= 90) {
       setProgress(100);
       onComplete(id);
@@ -150,7 +175,7 @@ export const ActivitySliderCard = ({
       ref={cardRef}
       className={`relative overflow-hidden rounded-2xl transition-all duration-300 ${
         completed ? 'shadow-md' : 'shadow-sm hover:shadow-md'
-      } ${!completed && 'cursor-grab active:cursor-grabbing'}`}
+      } ${!completed && (isEducationalHabit ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing')}`}
       style={{
         height: '70px',
         userSelect: 'none',
