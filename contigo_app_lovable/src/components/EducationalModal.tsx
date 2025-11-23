@@ -3,16 +3,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Volume2 } from "lucide-react";
 import { EDUCATIONAL_CONTENT } from "@/data/educationalContent";
+import tigoProfile from "@/assets/tigo-profile-blue-penguin.png";
 
 interface EducationalModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
 }
 
-export const EducationalModal = ({ open, onOpenChange }: EducationalModalProps) => {
+export const EducationalModal = ({ open, onOpenChange, onConfirm }: EducationalModalProps) => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioStarted, setAudioStarted] = useState(false);
+  const [audioCompleted, setAudioCompleted] = useState(false);
+  const [audioCurrentTime, setAudioCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -32,12 +37,15 @@ export const EducationalModal = ({ open, onOpenChange }: EducationalModalProps) 
     };
   }, []);
 
-  // Handle modal close
+  // Handle modal close - reset all states
   useEffect(() => {
     if (!open) {
       stopAudio();
       setCurrentSlideIndex(0);
       setAudioStarted(false);
+      setAudioCompleted(false);
+      setAudioCurrentTime(0);
+      setAudioDuration(0);
     }
   }, [open]);
 
@@ -61,11 +69,19 @@ export const EducationalModal = ({ open, onOpenChange }: EducationalModalProps) 
     try {
       audioRef.current = new Audio('/audio/hipoglucemia-hiperglucemia.wav');
       
+      // Evento cuando se carga la metadata (duración)
+      audioRef.current.addEventListener('loadedmetadata', () => {
+        if (audioRef.current) {
+          setAudioDuration(audioRef.current.duration);
+        }
+      });
+      
       // Evento cuando el audio se actualiza
       audioRef.current.addEventListener('timeupdate', () => {
         if (!audioRef.current) return;
         
-        const currentTime = Math.floor(audioRef.current.currentTime);
+        const currentTime = audioRef.current.currentTime;
+        setAudioCurrentTime(currentTime);
         
         // Buscar el slide correspondiente según el tiempo actual
         const slideIndex = audioSync.findIndex(
@@ -77,9 +93,10 @@ export const EducationalModal = ({ open, onOpenChange }: EducationalModalProps) 
         }
       });
       
-      // Evento cuando el audio termina
+      // Evento cuando el audio termina - HABILITA EL BOTÓN
       audioRef.current.addEventListener('ended', () => {
-        stopAudio();
+        setIsPlaying(false);
+        setAudioCompleted(true); // ✅ Habilita el botón de confirmación
       });
       
       // Evento de error (si el archivo no existe, usar simulación)
@@ -104,9 +121,12 @@ export const EducationalModal = ({ open, onOpenChange }: EducationalModalProps) 
   // Función de respaldo: simulación para MVP
   const useFallbackSimulation = () => {
     let currentTime = 0;
+    const totalDuration = audioSync[audioSync.length - 1].endAt;
+    setAudioDuration(totalDuration);
     
     timeUpdateIntervalRef.current = setInterval(() => {
       currentTime += 1;
+      setAudioCurrentTime(currentTime);
       
       // Buscar el slide correspondiente según el tiempo actual
       const slideIndex = audioSync.findIndex(
@@ -119,7 +139,11 @@ export const EducationalModal = ({ open, onOpenChange }: EducationalModalProps) 
       
       // Detener cuando termine el último slide
       if (currentTime > audioSync[audioSync.length - 1].endAt) {
-        stopAudio();
+        setIsPlaying(false);
+        setAudioCompleted(true); // ✅ Habilita el botón de confirmación
+        if (timeUpdateIntervalRef.current) {
+          clearInterval(timeUpdateIntervalRef.current);
+        }
       }
     }, 1000);
   };
@@ -139,6 +163,37 @@ export const EducationalModal = ({ open, onOpenChange }: EducationalModalProps) 
   const handleClose = () => {
     stopAudio();
     onOpenChange(false);
+  };
+
+  const togglePlayPause = () => {
+    if (!audioRef.current) return;
+    
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTime = parseFloat(e.target.value);
+    setAudioCurrentTime(newTime);
+    
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleConfirm = () => {
+    onConfirm();
   };
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -260,9 +315,9 @@ export const EducationalModal = ({ open, onOpenChange }: EducationalModalProps) 
           </div>
         </div>
 
-        {/* Audio Control Button - Fijo abajo, fuera del scroll con padding reducido */}
-        <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t bg-background space-y-2">
-          {/* Slide dots indicator - Encima del botón con padding reducido */}
+        {/* Área de controles - Fijo abajo */}
+        <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t bg-background space-y-3">
+          {/* Slide dots indicator */}
           <div className="flex justify-center gap-1.5 py-0.5">
             {slides.map((_, index) => (
               <div
@@ -276,33 +331,96 @@ export const EducationalModal = ({ open, onOpenChange }: EducationalModalProps) 
             ))}
           </div>
 
-          {/* Swipe indicator */}
-          {!isPlaying && (
-            <div className="text-center text-[10px] text-muted-foreground italic">
-              💡 Desliza para cambiar de slide
+
+
+          {/* Tigo Flotante con Diálogo */}
+          {!audioStarted ? (
+            <div className="flex items-end gap-3 justify-center">
+              {/* Speech Bubble */}
+              <div className="relative bg-primary text-primary-foreground rounded-2xl px-4 py-2 shadow-md">
+                <div className="text-xs font-medium whitespace-nowrap">
+                  ¿Lo leo contigo?
+                </div>
+                {/* Triangle pointer */}
+                <div className="absolute -right-2 bottom-3 w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-primary border-b-[8px] border-b-transparent"></div>
+              </div>
+              
+              {/* Tigo Avatar Clickeable */}
+              <button
+                onClick={handleStartAudio}
+                className="relative flex-shrink-0 transition-transform hover:scale-110 active:scale-95"
+              >
+                <img 
+                  src={tigoProfile} 
+                  alt="Tigo" 
+                  className="h-16 w-16 object-contain drop-shadow-lg"
+                />
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Tigo Avatar con Audio Player */}
+              <div className="flex items-center gap-3">
+                <img 
+                  src={tigoProfile} 
+                  alt="Tigo" 
+                  className="h-12 w-12 object-contain flex-shrink-0"
+                />
+                
+                <div className="flex-1 bg-muted/30 rounded-lg p-2 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 flex-shrink-0"
+                      onClick={togglePlayPause}
+                    >
+                      {isPlaying ? (
+                        <span className="text-base">⏸</span>
+                      ) : (
+                        <span className="text-base">▶</span>
+                      )}
+                    </Button>
+                    
+                    <div className="flex-1">
+                      <input
+                        type="range"
+                        min="0"
+                        max={audioDuration || 100}
+                        value={audioCurrentTime}
+                        onChange={handleSeek}
+                        className="w-full h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+                        style={{
+                          background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(audioCurrentTime / audioDuration) * 100}%, #d1d5db ${(audioCurrentTime / audioDuration) * 100}%, #d1d5db 100%)`
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between text-[9px] text-muted-foreground px-1">
+                    <span>{formatTime(audioCurrentTime)}</span>
+                    <span>{formatTime(audioDuration)}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {audioCompleted && (
+                <div className="text-center text-xs text-success font-medium">
+                  ✓ Audio completado
+                </div>
+              )}
             </div>
           )}
 
-          {/* Botón de audio con altura optimizada */}
-          {!audioStarted ? (
-            <Button
-              size="lg"
-              className="w-full h-12 text-sm font-semibold"
-              onClick={handleStartAudio}
-            >
-              <Volume2 className="h-4 w-4 mr-2" />
-              Deja que tu Tigo te lo explique
-            </Button>
-          ) : (
-            <div className="text-center py-2">
-              <div className="flex items-center justify-center gap-2 text-primary">
-                <Volume2 className="h-4 w-4 animate-pulse" />
-                <span className="text-sm font-medium">
-                  {isPlaying ? "Reproduciendo..." : "Audio finalizado"}
-                </span>
-              </div>
-            </div>
-          )}
+          {/* Botón Principal - Completar */}
+          <Button
+            size="lg"
+            className="w-full h-12 text-sm font-semibold"
+            disabled={audioStarted ? !audioCompleted : currentSlideIndex !== slides.length - 1}
+            onClick={handleConfirm}
+          >
+            ✓ Completar
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
