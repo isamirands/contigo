@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { BottomNav } from "@/components/BottomNav";
 import { Card } from "@/components/ui/card";
 import { 
@@ -7,19 +8,25 @@ import {
   CheckCircle, 
   BarChart3,
   MapPin,
-  Heart,
-  Activity,
-  Droplet,
   BookOpen,
   Trophy,
   Plane,
   Medal,
-  Clock
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Video,
+  FileText
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Metrics = () => {
   const navigate = useNavigate();
+  const [currentMonth, setCurrentMonth] = useState(11); // Diciembre = 11
+  const [currentYear, setCurrentYear] = useState(2024);
+  const [isCalendarExpanded, setIsCalendarExpanded] = useState(true);
 
   // Mock data
   const todayProgress = 40;
@@ -37,18 +44,54 @@ const Metrics = () => {
   const yellowDays = 8;
   const redDays = 3;
   
-  const dayCompletions = Array.from({ length: daysInMonth }, (_, i) => {
-    const day = i + 1;
-    if (day > today) return null;
-    if (day === today) return todayProgress;
-    return Math.floor(Math.random() * 100);
-  });
+  const [dayCompletions] = useState(() =>
+    Array.from({ length: daysInMonth }, (_, i) => {
+      const day = i + 1;
+      if (day > today) return null;
+      if (day === today) return todayProgress;
+      return Math.floor(Math.random() * 100);
+    })
+  );
+
 
   const getDayColor = (completion: number | null) => {
     if (completion === null) return "bg-muted text-muted-foreground";
-    if (completion === 100) return "bg-success text-white";
-    if (completion >= 50) return "bg-accent text-foreground";
+    if (completion > 75) return "bg-success text-white";
+    if (completion >= 40) return "bg-accent text-foreground";
     return "bg-destructive/30 text-foreground";
+  };
+
+  const monthNames = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+
+  const handlePreviousMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
+
+  const [selectedDay, setSelectedDay] = useState<number | null>(today);
+
+  const handleDayClick = (day: number, completion: number | null) => {
+    // Solo permitir click en días con datos (no grises)
+    if (completion === null) return;
+    
+    setSelectedDay(day);
+    // No cerrar el calendario automáticamente
   };
 
   return (
@@ -100,6 +143,93 @@ const Metrics = () => {
           </div>
         </Card>
 
+        {/* Calendario */}
+        <Card className="p-4">
+          <button
+            onClick={() => setIsCalendarExpanded(!isCalendarExpanded)}
+            className="w-full flex items-center justify-between mb-3"
+          >
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePreviousMonth();
+                }}
+                className="p-1 hover:bg-muted rounded transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <h3 className="font-semibold">{monthNames[currentMonth]} {currentYear}</h3>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNextMonth();
+                }}
+                className="p-1 hover:bg-muted rounded transition-colors"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+            {isCalendarExpanded ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+
+          {isCalendarExpanded && (
+            <>
+              <div className="grid grid-cols-7 gap-1.5 mb-3">
+                {Array.from({ length: daysInMonth }, (_, i) => {
+                  const day = i + 1;
+                  const completion = dayCompletions[i];
+                  const isToday = day === today;
+                  
+                  const isGrayDay = completion === null;
+                  
+                  return (
+                    <button
+                      key={day}
+                      onClick={() => handleDayClick(day, completion)}
+                      disabled={isGrayDay}
+                      className={`aspect-square rounded-lg flex items-center justify-center text-xs font-medium ${
+                        getDayColor(completion)
+                      } ${selectedDay === day && !isGrayDay ? "ring-2 ring-primary ring-offset-1" : ""} ${
+                        isGrayDay ? "cursor-not-allowed" : "cursor-pointer"
+                      }`}
+                      style={{ 
+                        backgroundColor: isGrayDay ? undefined : 
+                          completion === null ? undefined :
+                          completion > 75 ? 'hsl(var(--success))' :
+                          completion >= 40 ? 'hsl(var(--accent))' :
+                          'hsl(var(--destructive) / 0.3)'
+                      }}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {/* Leyenda de colores */}
+              <div className="flex items-center justify-center gap-4 text-xs pt-2 border-t border-border">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full bg-success" />
+                  <span className="text-muted-foreground">&gt; 75%</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full bg-accent" />
+                  <span className="text-muted-foreground">40–75%</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full bg-destructive/30" />
+                  <span className="text-muted-foreground">&lt; 40%</span>
+                </div>
+              </div>
+            </>
+          )}
+        </Card>
+
         {/* Progreso diario */}
         <div className="flex flex-col items-center py-4">
           <div className="relative w-40 h-40">
@@ -131,32 +261,6 @@ const Metrics = () => {
           </div>
         </div>
 
-        {/* Calendario */}
-        <Card className="p-4">
-          <h3 className="font-semibold mb-3">Adherencia mensual</h3>
-          <div className="grid grid-cols-7 gap-1.5 mb-3">
-            {Array.from({ length: daysInMonth }, (_, i) => {
-              const day = i + 1;
-              const completion = dayCompletions[i];
-              const isToday = day === today;
-              
-              return (
-                <div
-                  key={day}
-                  className={`aspect-square rounded-lg flex items-center justify-center text-xs font-medium ${
-                    getDayColor(completion)
-                  } ${isToday ? "ring-2 ring-primary" : ""}`}
-                >
-                  {day}
-                </div>
-              );
-            })}
-          </div>
-          <p className="text-xs text-muted-foreground text-center">
-            Este mes: {greenDays} días verdes, {yellowDays} amarillos, {redDays} rojos
-          </p>
-        </Card>
-
         {/* KPIs */}
         <div className="grid grid-cols-2 gap-3">
           <Card className="p-4 text-center">
@@ -181,64 +285,42 @@ const Metrics = () => {
           </Card>
         </div>
 
-        {/* Métricas de salud */}
-        <Card className="p-4">
-          <h3 className="font-semibold mb-4">Tus métricas de salud</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <Droplet className="h-5 w-5 text-primary mx-auto mb-1" />
-              <div className="text-lg font-bold">120 mg/dL</div>
-              <div className="text-xs text-muted-foreground">Glucosa promedio</div>
-            </div>
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-success mx-auto mb-1" />
-              <div className="text-lg font-bold">18 días</div>
-              <div className="text-xs text-muted-foreground">Dentro de rango</div>
-            </div>
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <Heart className="h-5 w-5 text-destructive mx-auto mb-1" />
-              <div className="text-lg font-bold">120/80</div>
-              <div className="text-xs text-muted-foreground">Presión arterial</div>
-            </div>
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <Activity className="h-5 w-5 text-accent mx-auto mb-1" />
-              <div className="text-lg font-bold">95%</div>
-              <div className="text-xs text-muted-foreground">Adherencia</div>
-            </div>
-          </div>
-        </Card>
-
         {/* Aprendizaje */}
         <Card className="p-4">
-          <h3 className="font-semibold mb-3 flex items-center gap-2">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-primary" />
             Tu aprendizaje del mes
           </h3>
-          <p className="text-sm text-muted-foreground mb-3">Completaste 3 de 6 módulos educativos</p>
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm">
               <CheckCircle className="h-4 w-4 text-success" />
-              <span>Qué es la prediabetes</span>
+              <Video className="h-3 w-3 text-muted-foreground" />
+              <span>Video: ¿Qué es la prediabetes?</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <CheckCircle className="h-4 w-4 text-success" />
-              <span>Cómo funciona la metformina</span>
+              <FileText className="h-3 w-3 text-muted-foreground" />
+              <span>Lectura: Cómo funciona la metformina</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <CheckCircle className="h-4 w-4 text-success" />
-              <span>Control de glucosa en casa</span>
+              <Video className="h-3 w-3 text-muted-foreground" />
+              <span>Video: Control de glucosa en casa</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <div className="h-4 w-4 border-2 border-muted rounded" />
-              <span>Alimentación inteligente</span>
+              <FileText className="h-3 w-3" />
+              <span>Lectura: Alimentación inteligente</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <div className="h-4 w-4 border-2 border-muted rounded" />
-              <span>Ejercicio y diabetes</span>
+              <Video className="h-3 w-3" />
+              <span>Video: Ejercicio y diabetes</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <div className="h-4 w-4 border-2 border-muted rounded" />
-              <span>Manejo del estrés</span>
+              <FileText className="h-3 w-3" />
+              <span>Lectura: Manejo del estrés</span>
             </div>
           </div>
         </Card>
