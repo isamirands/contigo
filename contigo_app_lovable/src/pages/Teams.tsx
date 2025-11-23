@@ -1,20 +1,208 @@
+import { useState, useEffect } from "react";
 import { BottomNav } from "@/components/BottomNav";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Users, Plus, TrendingUp } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import { Users, Pencil, HandMetal, DoorOpen } from "lucide-react";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import tigoPenguin from "@/assets/tigo-walking-blue-penguin.png";
 
-const TEAM_MEMBERS = [
-  { id: 1, name: "María García", initials: "MG", steps: 15, color: "bg-primary" },
-  { id: 2, name: "Carlos López", initials: "CL", steps: 12, color: "bg-secondary" },
-  { id: 3, name: "Tú", initials: "TÚ", steps: 10, color: "bg-accent" },
-  { id: 4, name: "Ana Martínez", initials: "AM", steps: 8, color: "bg-success" },
+// IMPORTANT: This must match the TEAM_MEMBERS structure in Home.tsx
+// to ensure consistency between the Tigo journey and the team list
+interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+}
+
+const ALL_TEAM_MEMBERS: TeamMember[] = [
+  { id: "user1", name: "Tú", role: "Paciente" },
+  { id: "user2", name: "Ana", role: "Cuidador" },
 ];
 
+interface TeamInfo {
+  name: string;
+  description: string;
+  treatmentTypes: string[];
+}
+
+const INITIAL_TEAM_INFO: TeamInfo = {
+  name: "Familia Contigo",
+  description: "Juntos somos más fuertes en nuestro camino hacia el bienestar",
+  treatmentTypes: ["Diabetes"],
+};
+
+// Get team members from localStorage
+const getTeamMembersFromStorage = (): TeamMember[] => {
+  try {
+    const stored = localStorage.getItem('teamMembers');
+    if (stored) {
+      const ids: string[] = JSON.parse(stored);
+      return ALL_TEAM_MEMBERS.filter(m => ids.includes(m.id));
+    }
+  } catch (e) {
+    console.error('Error reading team members from storage:', e);
+  }
+  // Default: all members
+  return ALL_TEAM_MEMBERS;
+};
+
+// Save team members to localStorage
+const saveTeamMembersToStorage = (members: TeamMember[]) => {
+  try {
+    const ids = members.map(m => m.id);
+    localStorage.setItem('teamMembers', JSON.stringify(ids));
+    // Dispatch custom event for same-window updates
+    window.dispatchEvent(new Event('teamMembersUpdated'));
+  } catch (e) {
+    console.error('Error saving team members to storage:', e);
+  }
+};
+
 const Teams = () => {
-  const totalTeamSteps = TEAM_MEMBERS.reduce((sum, member) => sum + member.steps, 0);
-  const avgSteps = Math.round(totalTeamSteps / TEAM_MEMBERS.length);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(getTeamMembersFromStorage());
+  const [teamInfo, setTeamInfo] = useState(INITIAL_TEAM_INFO);
+  
+  // Sync team members to localStorage whenever they change
+  useEffect(() => {
+    saveTeamMembersToStorage(teamMembers);
+  }, [teamMembers]);
+  const [editTeamOpen, setEditTeamOpen] = useState(false);
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
+  
+  // Edit form state
+  const [editName, setEditName] = useState(teamInfo.name);
+  const [editDescription, setEditDescription] = useState(teamInfo.description);
+  const [editTreatmentTypes, setEditTreatmentTypes] = useState(teamInfo.treatmentTypes.join(", "));
+
+  // Swipe state
+  const [swipedMemberId, setSwipedMemberId] = useState<string | null>(null);
+  const [dragStartX, setDragStartX] = useState<number | null>(null);
+  const [dragStartY, setDragStartY] = useState<number | null>(null);
+  const [dragOffsetX, setDragOffsetX] = useState<{ [key: string]: number }>({});
+
+  const handleSaveTeamInfo = () => {
+    setTeamInfo({
+      name: editName,
+      description: editDescription,
+      treatmentTypes: editTreatmentTypes.split(",").map(t => t.trim()).filter(t => t),
+    });
+    setEditTeamOpen(false);
+    toast.success("Información del equipo actualizada");
+  };
+
+  const handleNudgeMember = (memberName: string) => {
+    toast.success(`Recordatorio enviado a ${memberName} para abrir la app`);
+    setSwipedMemberId(null);
+    setDragOffsetX({});
+  };
+
+  const handleRemoveMember = (memberId: string) => {
+    setMemberToRemove(memberId);
+    setConfirmRemoveOpen(true);
+  };
+
+  const confirmRemoveMember = () => {
+    if (memberToRemove) {
+      const member = teamMembers.find(m => m.id === memberToRemove);
+      setTeamMembers(prev => prev.filter(m => m.id !== memberToRemove));
+      toast.success(`${member?.name} ha sido eliminado del equipo`);
+      setSwipedMemberId(null);
+      setDragOffsetX({});
+    }
+    setConfirmRemoveOpen(false);
+    setMemberToRemove(null);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent, memberId: string) => {
+    const touch = e.touches[0];
+    setDragStartX(touch.clientX);
+    setDragStartY(touch.clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent, memberId: string) => {
+    if (dragStartX === null || dragStartY === null) return;
+    
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - dragStartX;
+    const deltaY = touch.clientY - dragStartY;
+    
+    // Only trigger horizontal swipe if movement is primarily horizontal
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+      e.preventDefault();
+      
+      // Only allow left swipe (negative deltaX)
+      if (deltaX < 0) {
+        const offset = Math.max(deltaX, -160); // Max swipe distance
+        setDragOffsetX(prev => ({ ...prev, [memberId]: offset }));
+      }
+    }
+  };
+
+  const handleTouchEnd = (memberId: string) => {
+    const offset = dragOffsetX[memberId] || 0;
+    
+    // If swiped more than 80px, snap to open position
+    if (offset < -80) {
+      setSwipedMemberId(memberId);
+      setDragOffsetX(prev => ({ ...prev, [memberId]: -160 }));
+    } else {
+      // Otherwise, snap back to closed
+      setDragOffsetX(prev => ({ ...prev, [memberId]: 0 }));
+      if (swipedMemberId === memberId) {
+        setSwipedMemberId(null);
+      }
+    }
+    
+    setDragStartX(null);
+    setDragStartY(null);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent, memberId: string) => {
+    setDragStartX(e.clientX);
+    setDragStartY(e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent, memberId: string) => {
+    if (dragStartX === null || dragStartY === null) return;
+    
+    const deltaX = e.clientX - dragStartX;
+    const deltaY = e.clientY - dragStartY;
+    
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+      if (deltaX < 0) {
+        const offset = Math.max(deltaX, -160);
+        setDragOffsetX(prev => ({ ...prev, [memberId]: offset }));
+      }
+    }
+  };
+
+  const handleMouseUp = (memberId: string) => {
+    const offset = dragOffsetX[memberId] || 0;
+    
+    if (offset < -80) {
+      setSwipedMemberId(memberId);
+      setDragOffsetX(prev => ({ ...prev, [memberId]: -160 }));
+    } else {
+      setDragOffsetX(prev => ({ ...prev, [memberId]: 0 }));
+      if (swipedMemberId === memberId) {
+        setSwipedMemberId(null);
+      }
+    }
+    
+    setDragStartX(null);
+    setDragStartY(null);
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -26,83 +214,199 @@ const Teams = () => {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6">
-        {/* Team Overview */}
-        <Card className="p-6 mb-8 bg-gradient-to-br from-primary/10 to-secondary/10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
+        {/* Team Info Section */}
+        <Card className="p-6 mb-6 bg-gradient-to-br from-primary/10 to-secondary/10">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
               <Users className="h-7 w-7 text-primary" />
             </div>
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold">Familia Contigo</h2>
-              <p className="text-sm text-muted-foreground">{TEAM_MEMBERS.length} miembros</p>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-semibold">{teamInfo.name}</h2>
+              <p className="text-sm text-muted-foreground mt-1">{teamInfo.description}</p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {teamInfo.treatmentTypes.map((type, index) => (
+                  <span 
+                    key={index}
+                    className="px-3 py-1 bg-primary/20 text-primary text-xs font-medium rounded-full"
+                  >
+                    {type}
+                  </span>
+                ))}
+              </div>
             </div>
+            <button
+              onClick={() => {
+                setEditName(teamInfo.name);
+                setEditDescription(teamInfo.description);
+                setEditTreatmentTypes(teamInfo.treatmentTypes.join(", "));
+                setEditTeamOpen(true);
+              }}
+              className="p-2 hover:bg-primary/10 rounded-full transition-colors flex-shrink-0"
+              aria-label="Editar equipo"
+            >
+              <Pencil className="h-5 w-5 text-primary" />
+            </button>
           </div>
-
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Pasos totales del equipo</span>
-              <span className="text-2xl font-bold text-primary">{totalTeamSteps}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Promedio por persona</span>
-              <span className="text-lg font-semibold">{avgSteps}</span>
-            </div>
+          
+          <div className="pt-3 border-t border-border/50">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">{teamMembers.length}</span> miembros en el equipo
+            </p>
           </div>
         </Card>
 
         {/* Team Members */}
         <section className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Miembros</h2>
-            <Button size="lg" className="h-12 gap-2">
-              <Plus className="h-5 w-5" />
-              Invitar
-            </Button>
-          </div>
+          <h2 className="text-xl font-semibold mb-4">Miembros</h2>
 
-          <div className="space-y-4">
-            {TEAM_MEMBERS.map((member) => (
-              <Card key={member.id} className="p-5">
-                <div className="flex items-center gap-4">
-                  <Avatar className={`h-14 w-14 ${member.color} flex-shrink-0`}>
-                    <AvatarFallback className="text-white font-semibold text-lg">
-                      {member.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg mb-1">{member.name}</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Pasos esta semana</span>
-                        <span className="font-medium text-primary">{member.steps}</span>
-                      </div>
-                      <Progress value={(member.steps / 20) * 100} className="h-2" />
-                    </div>
+          <div className="space-y-3">
+            {teamMembers.map((member) => {
+              const offset = dragOffsetX[member.id] || 0;
+              
+              return (
+                <div key={member.id} className="relative overflow-hidden rounded-lg">
+                  {/* Action buttons - revealed on swipe left */}
+                  <div className="absolute right-0 top-0 bottom-0 flex items-center gap-2 pr-3">
+                    {/* Nudge button */}
+                    <button
+                      onClick={() => handleNudgeMember(member.name)}
+                      className="w-16 h-16 rounded-2xl bg-pink-100 hover:bg-pink-200 flex flex-col items-center justify-center gap-1 transition-colors shadow-sm"
+                      aria-label="Recordar abrir app"
+                    >
+                      <HandMetal className="h-5 w-5 text-pink-600" />
+                      <span className="text-[10px] font-medium text-pink-700">Recordar</span>
+                    </button>
+                    
+                    {/* Remove button */}
+                    <button
+                      onClick={() => handleRemoveMember(member.id)}
+                      className="w-16 h-16 rounded-2xl bg-red-100 hover:bg-red-200 flex flex-col items-center justify-center gap-1 transition-colors shadow-sm"
+                      aria-label="Eliminar del equipo"
+                    >
+                      <DoorOpen className="h-5 w-5 text-red-600" />
+                      <span className="text-[10px] font-medium text-red-700">Eliminar</span>
+                    </button>
                   </div>
+
+                  {/* Member card - swipeable */}
+                  <Card 
+                    className="p-4 cursor-grab active:cursor-grabbing relative"
+                    style={{
+                      transform: `translateX(${offset}px)`,
+                      transition: dragStartX === null ? 'transform 0.3s ease-out' : 'none',
+                    }}
+                    onTouchStart={(e) => handleTouchStart(e, member.id)}
+                    onTouchMove={(e) => handleTouchMove(e, member.id)}
+                    onTouchEnd={() => handleTouchEnd(member.id)}
+                    onMouseDown={(e) => handleMouseDown(e, member.id)}
+                    onMouseMove={(e) => dragStartX !== null && handleMouseMove(e, member.id)}
+                    onMouseUp={() => handleMouseUp(member.id)}
+                    onMouseLeave={() => dragStartX !== null && handleMouseUp(member.id)}
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Tigo avatar */}
+                      <div className="w-14 h-14 flex-shrink-0">
+                        <img 
+                          src={tigoPenguin} 
+                          alt={`Avatar de ${member.name}`}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-lg">{member.name}</h3>
+                        <p className="text-sm text-muted-foreground">{member.role}</p>
+                      </div>
+                    </div>
+                  </Card>
                 </div>
-              </Card>
-            ))}
+              );
+            })}
           </div>
         </section>
-
-        {/* Team Benefits */}
-        <Card className="p-6 bg-accent/20 border-accent">
-          <div className="flex items-start gap-3">
-            <TrendingUp className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-            <div>
-              <h3 className="font-semibold mb-2">Beneficios del equipo</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Cuando cualquier miembro del equipo completa una actividad, 
-                <span className="font-medium text-foreground"> todos los pingüinos Tigo avanzan juntos</span>. 
-                ¡Motívense mutuamente y celebren cada victoria en equipo!
-              </p>
-            </div>
-          </div>
-        </Card>
       </main>
 
       <BottomNav />
+
+      {/* Edit Team Info Dialog */}
+      <Dialog open={editTeamOpen} onOpenChange={setEditTeamOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar información del equipo</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="team-name">Nombre del equipo</Label>
+              <Input
+                id="team-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Ej: Familia Contigo"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="team-description">Descripción</Label>
+              <Textarea
+                id="team-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Describe tu equipo..."
+                rows={3}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="treatment-types">Tipos de tratamiento</Label>
+              <Input
+                id="treatment-types"
+                value={editTreatmentTypes}
+                onChange={(e) => setEditTreatmentTypes(e.target.value)}
+                placeholder="Ej: Diabetes, Hipertensión (separados por comas)"
+              />
+              <p className="text-xs text-muted-foreground">
+                Separa múltiples tratamientos con comas
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTeamOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveTeamInfo}>
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Remove Member Dialog */}
+      <Dialog open={confirmRemoveOpen} onOpenChange={setConfirmRemoveOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Eliminar miembro</DialogTitle>
+          </DialogHeader>
+          
+          <p className="text-sm text-muted-foreground py-4">
+            ¿Seguro que quieres eliminar a{" "}
+            <span className="font-semibold text-foreground">
+              {teamMembers.find(m => m.id === memberToRemove)?.name}
+            </span>{" "}
+            de tu equipo?
+          </p>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmRemoveOpen(false)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmRemoveMember}>
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
