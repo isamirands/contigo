@@ -5,6 +5,7 @@ import { TigoWalkingStrip } from "@/components/TigoWalkingStrip";
 import { WeeklyCalendar } from "@/components/WeeklyCalendar";
 import { ActivitySliderCard } from "@/components/ActivitySliderCard";
 import { ActivityReminderModal } from "@/components/ActivityReminderModal";
+import { CompletionCelebration } from "@/components/CompletionCelebration";
 import { Pill, Droplet, Footprints, BookOpen, Moon, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { LucideIcon } from "lucide-react";
@@ -94,7 +95,12 @@ const Home = () => {
   const navigate = useNavigate();
   const [completedActivities, setCompletedActivities] = useState<string[]>([]);
   const [reminderModalOpen, setReminderModalOpen] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<{ id: string; title: string } | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<{ 
+    id: string; 
+    title: string; 
+    owners?: Array<{ name: string; avatar?: string }>;
+  } | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
   // Cumulative total steps since journey started (never resets)
   const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(42); // Mock starting value
 
@@ -143,15 +149,8 @@ const Home = () => {
       // Increment cumulative total steps (never resets)
       setTotalStepsSinceStart((prev) => prev + 1);
       
-      if (isTeam) {
-        toast.success("¡Excelente! Todo el equipo avanza", {
-          description: "Juntos llegamos más lejos",
-        });
-      } else {
-        toast.success("¡Excelente! Tigo avanza un paso más", {
-          description: "Sigue así, vas muy bien",
-        });
-      }
+      // Show celebration overlay
+      setShowCelebration(true);
     }
   };
 
@@ -241,7 +240,7 @@ const Home = () => {
                 completed={completedActivities.includes(activity.id)}
                 onComplete={handleCompleteActivity}
                 onReminder={(id, title) => {
-                  setSelectedActivity({ id, title });
+                  setSelectedActivity({ id, title, owners: activity.owners });
                   setReminderModalOpen(true);
                 }}
                 owners={activity.owners}
@@ -261,10 +260,16 @@ const Home = () => {
           open={reminderModalOpen}
           onOpenChange={setReminderModalOpen}
           activityTitle={selectedActivity.title}
-          teamMembers={TEAM_MEMBERS.map(m => ({ id: m.id, name: m.name }))}
+          activityOwners={selectedActivity.owners || []}
           isTeam={isTeam}
         />
       )}
+
+      {/* Completion Celebration */}
+      <CompletionCelebration
+        show={showCelebration}
+        onComplete={() => setShowCelebration(false)}
+      />
     </div>
   );
 };

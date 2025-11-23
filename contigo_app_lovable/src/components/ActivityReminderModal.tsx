@@ -5,16 +5,16 @@ import { Bell } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-interface TeamMember {
-  id: string;
+interface ActivityOwner {
   name: string;
+  avatar?: string;
 }
 
 interface ActivityReminderModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   activityTitle: string;
-  teamMembers: TeamMember[];
+  activityOwners: ActivityOwner[];
   isTeam: boolean;
 }
 
@@ -22,19 +22,19 @@ export const ActivityReminderModal = ({
   open,
   onOpenChange,
   activityTitle,
-  teamMembers,
+  activityOwners,
   isTeam,
 }: ActivityReminderModalProps) => {
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
   const [reminderTime, setReminderTime] = useState("now");
 
-  const toggleMember = (memberId: string) => {
+  const toggleMember = (memberName: string) => {
     setSelectedMembers(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(memberId)) {
-        newSet.delete(memberId);
+      if (newSet.has(memberName)) {
+        newSet.delete(memberName);
       } else {
-        newSet.add(memberId);
+        newSet.add(memberName);
       }
       return newSet;
     });
@@ -46,10 +46,7 @@ export const ActivityReminderModal = ({
       return;
     }
 
-    const memberNames = teamMembers
-      .filter(m => selectedMembers.has(m.id))
-      .map(m => m.name)
-      .join(", ");
+    const memberNames = Array.from(selectedMembers).join(", ");
 
     toast.success("Recordatorio creado", {
       description: `Para: ${memberNames} - ${activityTitle}`,
@@ -80,32 +77,32 @@ export const ActivityReminderModal = ({
             ¿A quién quieres enviarle un recordatorio para esta actividad?
           </p>
 
-          {/* Team Members List */}
+          {/* Activity Owners List - Only people assigned to this activity */}
           <div className="space-y-2">
-            {teamMembers.map((member) => (
+            {activityOwners.map((owner, index) => (
               <button
-                key={member.id}
-                onClick={() => toggleMember(member.id)}
+                key={index}
+                onClick={() => toggleMember(owner.name)}
                 className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
-                  selectedMembers.has(member.id)
+                  selectedMembers.has(owner.name)
                     ? "border-blue-500 bg-blue-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
                 <Avatar className="w-10 h-10">
                   <AvatarFallback className="text-sm bg-primary/10 text-primary font-medium">
-                    {member.name.slice(0, 2).toUpperCase()}
+                    {owner.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium flex-1 text-left">{member.name}</span>
+                <span className="text-sm font-medium flex-1 text-left">{owner.name}</span>
                 <div
                   className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                    selectedMembers.has(member.id)
+                    selectedMembers.has(owner.name)
                       ? "bg-blue-500 border-blue-500"
                       : "border-gray-300"
                   }`}
                 >
-                  {selectedMembers.has(member.id) && (
+                  {selectedMembers.has(owner.name) && (
                     <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
