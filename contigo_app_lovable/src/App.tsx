@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Journey from "./pages/Journey";
 import NewHabit from "./pages/NewHabit";
+import Metrics from "./pages/Metrics";
 import ExplorarForos from "./pages/ExplorarForos";
 import PostDetail from "./pages/PostDetail";
 import Teams from "./pages/Teams";
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/" element={<Home />} />
           <Route path="/journey" element={<Journey />} />
           <Route path="/new-habit" element={<NewHabit />} />
+          <Route path="/metrics" element={<Metrics />} />
           <Route path="/explorar-foros" element={<ExplorarForos />} />
           <Route path="/post/:id" element={<PostDetail />} />
           <Route path="/teams" element={<Teams />} />

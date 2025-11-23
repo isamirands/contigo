@@ -1,12 +1,12 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { TigoWalkingStrip } from "@/components/TigoWalkingStrip";
 import { WeeklyCalendar } from "@/components/WeeklyCalendar";
 import { ActivitySliderCard } from "@/components/ActivitySliderCard";
-import { RemindersModal } from "@/components/RemindersModal";
-import { EducationalModal } from "@/components/EducationalModal";
-import { Button } from "@/components/ui/button";
-import { Pill, Droplet, Footprints, BookOpen, Bell, Moon } from "lucide-react";
+import { ActivityReminderModal } from "@/components/ActivityReminderModal";
+import { CompletionCelebration } from "@/components/CompletionCelebration";
+import { Pill, Droplet, Footprints, BookOpen, Moon, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { LucideIcon } from "lucide-react";
 
@@ -92,10 +92,15 @@ const WEEK_DATA = [
 ];
 
 const Home = () => {
+  const navigate = useNavigate();
   const [completedActivities, setCompletedActivities] = useState<string[]>([]);
-  const [remindersModalOpen, setRemindersModalOpen] = useState(false);
-  const [educationalModalOpen, setEducationalModalOpen] = useState(false);
-  const [educationalActivityId, setEducationalActivityId] = useState<string | null>(null);
+  const [reminderModalOpen, setReminderModalOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<{ 
+    id: string; 
+    title: string; 
+    owners?: Array<{ name: string; avatar?: string }>;
+  } | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
   // Cumulative total steps since journey started (never resets)
   const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(42); // Mock starting value
 
@@ -144,28 +149,9 @@ const Home = () => {
       // Increment cumulative total steps (never resets)
       setTotalStepsSinceStart((prev) => prev + 1);
       
-      if (isTeam) {
-        toast.success("¡Excelente! Todo el equipo avanza", {
-          description: "Juntos llegamos más lejos",
-        });
-      } else {
-        toast.success("¡Excelente! Tigo avanza un paso más", {
-          description: "Sigue así, vas muy bien",
-        });
-      }
+      // Show celebration overlay
+      setShowCelebration(true);
     }
-  };
-
-  const handleEducationalClick = (id: string) => {
-    setEducationalActivityId(id);
-    setEducationalModalOpen(true);
-  };
-
-  const handleEducationalComplete = () => {
-    if (educationalActivityId && !completedActivities.includes(educationalActivityId)) {
-      handleCompleteActivity(educationalActivityId);
-    }
-    setEducationalModalOpen(false);
   };
 
   // Calculate progress based on activity pool
@@ -201,9 +187,18 @@ const Home = () => {
     <div className="h-screen flex flex-col bg-background">
       {/* Header - Fixed at top */}
       <header className="bg-card border-b border-border flex-shrink-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-primary">Contigo</h1>
-          <p className="text-sm text-muted-foreground mt-1">Juntos en tu camino</p>
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-primary">Contigo</h1>
+            <p className="text-sm text-muted-foreground mt-1">Juntos en tu camino</p>
+          </div>
+          <button
+            onClick={() => navigate("/settings")}
+            className="p-2 hover:bg-secondary rounded-full transition-colors"
+            aria-label="Ajustes"
+          >
+            <Settings className="h-5 w-5 text-muted-foreground" />
+          </button>
         </div>
       </header>
 
@@ -244,7 +239,10 @@ const Home = () => {
                 title={activity.title}
                 completed={completedActivities.includes(activity.id)}
                 onComplete={handleCompleteActivity}
-                onEducationalClick={() => handleEducationalClick(activity.id)}
+                onReminder={(id, title) => {
+                  setSelectedActivity({ id, title, owners: activity.owners });
+                  setReminderModalOpen(true);
+                }}
                 owners={activity.owners}
                 colorIndex={index}
               />
@@ -252,36 +250,25 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Section 4: Reminders Button - Fixed at bottom */}
-        <div className="flex-shrink-0 px-4 pb-6 pt-4 bg-background border-t border-border">
-          <Button 
-            variant="secondary" 
-            size="lg" 
-            className="w-full h-14 text-lg"
-            onClick={() => setRemindersModalOpen(true)}
-          >
-            <Bell className="h-6 w-6" />
-            Recordatorios
-          </Button>
-        </div>
       </main>
 
       <BottomNav />
 
-      {/* Reminders Modal */}
-      <RemindersModal
-        open={remindersModalOpen}
-        onOpenChange={setRemindersModalOpen}
-        userActivities={CURRENT_USER_ACTIVITIES}
-        teamMembers={TEAM_MEMBERS}
-        isTeam={isTeam}
-      />
+      {/* Activity Reminder Modal */}
+      {selectedActivity && (
+        <ActivityReminderModal
+          open={reminderModalOpen}
+          onOpenChange={setReminderModalOpen}
+          activityTitle={selectedActivity.title}
+          activityOwners={selectedActivity.owners || []}
+          isTeam={isTeam}
+        />
+      )}
 
-      {/* Educational Modal */}
-      <EducationalModal
-        open={educationalModalOpen}
-        onOpenChange={setEducationalModalOpen}
-        onComplete={handleEducationalComplete}
+      {/* Completion Celebration */}
+      <CompletionCelebration
+        show={showCelebration}
+        onComplete={() => setShowCelebration(false)}
       />
     </div>
   );

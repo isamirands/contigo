@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { LucideIcon, Check } from "lucide-react";
+import { LucideIcon, Check, Bell } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Soft pastel color palette for calm, peaceful UI
@@ -19,7 +19,17 @@ interface ActivitySliderCardProps {
   title: string;
   completed: boolean;
   onComplete: (id: string) => void;
-  onEducationalClick?: () => void;
+  owners?: Array<{ name: string; avatar?: string }>;
+  colorIndex?: number;
+}
+
+interface ActivitySliderCardProps {
+  id: string;
+  icon: LucideIcon;
+  title: string;
+  completed: boolean;
+  onComplete: (id: string) => void;
+  onReminder?: (id: string, title: string) => void;
   owners?: Array<{ name: string; avatar?: string }>;
   colorIndex?: number;
 }
@@ -30,17 +40,19 @@ export const ActivitySliderCard = ({
   title, 
   completed, 
   onComplete,
-  onEducationalClick,
+  onReminder,
   owners,
   colorIndex = 0
 }: ActivitySliderCardProps) => {
   const [progress, setProgress] = useState(completed ? 100 : 0);
+  const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef(0);
   const startYRef = useRef(0);
   const startProgressRef = useRef(0);
   const isHorizontalGestureRef = useRef(false);
+  const swipeDirectionRef = useRef<"left" | "right" | null>(null);
 
   // Get color from palette
   const colorScheme = PASTEL_COLORS[colorIndex % PASTEL_COLORS.length];
@@ -233,6 +245,20 @@ export const ActivitySliderCard = ({
             </div>
           )}
           
+          {/* Reminder button */}
+          {!completed && onReminder && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onReminder(id, title);
+              }}
+              className="p-1.5 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors"
+              aria-label="Recordatorio"
+            >
+              <Bell className="h-4 w-4 text-blue-600" />
+            </button>
+          )}
+          
           {completed && (
             <div className="bg-white rounded-full p-1 shadow-sm">
               <Check className="h-4 w-4 text-slate-700" />
@@ -240,7 +266,7 @@ export const ActivitySliderCard = ({
           )}
           
           {/* Progress hint */}
-          {!completed && progress < 90 && (
+          {!completed && progress < 90 && !onReminder && (
             <span className="text-xs font-medium text-slate-600">
               →
             </span>
