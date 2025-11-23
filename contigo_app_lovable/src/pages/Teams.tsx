@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import tigoPenguin from "@/assets/tigo-walking-blue-penguin.png";
+import TigoProfileBluePenguin from "@/assets/tigo-profile-blue-penguin.png";
 
 // IMPORTANT: This must match the TEAM_MEMBERS structure in Home.tsx
 // to ensure consistency between the Tigo journey and the team list
@@ -124,6 +124,20 @@ const Teams = () => {
     setMemberToRemove(null);
   };
 
+  // Close any open card
+  const closeCard = (memberId: string) => {
+    setDragOffsetX(prev => ({ ...prev, [memberId]: 0 }));
+    if (swipedMemberId === memberId) {
+      setSwipedMemberId(null);
+    }
+  };
+
+  // Close all cards
+  const closeAllCards = () => {
+    setDragOffsetX({});
+    setSwipedMemberId(null);
+  };
+
   const handleTouchStart = (e: React.TouchEvent, memberId: string) => {
     const touch = e.touches[0];
     setDragStartX(touch.clientX);
@@ -141,27 +155,38 @@ const Teams = () => {
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
       e.preventDefault();
       
-      // Only allow left swipe (negative deltaX)
-      if (deltaX < 0) {
-        const offset = Math.max(deltaX, -160); // Max swipe distance
-        setDragOffsetX(prev => ({ ...prev, [memberId]: offset }));
-      }
+      const currentOffset = dragOffsetX[memberId] || 0;
+      
+      // Allow both left and right swipe
+      // Left swipe: negative deltaX (opens card)
+      // Right swipe: positive deltaX (closes card)
+      let newOffset = currentOffset + deltaX - (dragStartX - touch.clientX);
+      
+      // Constrain offset: 0 (closed) to -160 (fully open)
+      newOffset = Math.max(-160, Math.min(0, newOffset));
+      
+      setDragOffsetX(prev => ({ ...prev, [memberId]: newOffset }));
+      setDragStartX(touch.clientX);
+      setDragStartY(touch.clientY);
     }
   };
 
   const handleTouchEnd = (memberId: string) => {
     const offset = dragOffsetX[memberId] || 0;
     
-    // If swiped more than 80px, snap to open position
+    // If swiped more than 80px left, snap to open position
     if (offset < -80) {
       setSwipedMemberId(memberId);
       setDragOffsetX(prev => ({ ...prev, [memberId]: -160 }));
+      // Close other cards
+      Object.keys(dragOffsetX).forEach(id => {
+        if (id !== memberId) {
+          closeCard(id);
+        }
+      });
     } else {
       // Otherwise, snap back to closed
-      setDragOffsetX(prev => ({ ...prev, [memberId]: 0 }));
-      if (swipedMemberId === memberId) {
-        setSwipedMemberId(null);
-      }
+      closeCard(memberId);
     }
     
     setDragStartX(null);
@@ -180,10 +205,17 @@ const Teams = () => {
     const deltaY = e.clientY - dragStartY;
     
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
-      if (deltaX < 0) {
-        const offset = Math.max(deltaX, -160);
-        setDragOffsetX(prev => ({ ...prev, [memberId]: offset }));
-      }
+      const currentOffset = dragOffsetX[memberId] || 0;
+      
+      // Allow both left and right swipe
+      let newOffset = currentOffset + deltaX - (dragStartX - e.clientX);
+      
+      // Constrain offset: 0 (closed) to -160 (fully open)
+      newOffset = Math.max(-160, Math.min(0, newOffset));
+      
+      setDragOffsetX(prev => ({ ...prev, [memberId]: newOffset }));
+      setDragStartX(e.clientX);
+      setDragStartY(e.clientY);
     }
   };
 
@@ -193,11 +225,14 @@ const Teams = () => {
     if (offset < -80) {
       setSwipedMemberId(memberId);
       setDragOffsetX(prev => ({ ...prev, [memberId]: -160 }));
+      // Close other cards
+      Object.keys(dragOffsetX).forEach(id => {
+        if (id !== memberId) {
+          closeCard(id);
+        }
+      });
     } else {
-      setDragOffsetX(prev => ({ ...prev, [memberId]: 0 }));
-      if (swipedMemberId === memberId) {
-        setSwipedMemberId(null);
-      }
+      closeCard(memberId);
     }
     
     setDragStartX(null);
@@ -290,7 +325,7 @@ const Teams = () => {
 
                   {/* Member card - swipeable */}
                   <Card 
-                    className="p-4 cursor-grab active:cursor-grabbing relative"
+                    className="p-4 cursor-grab active:cursor-grabbing relative bg-card"
                     style={{
                       transform: `translateX(${offset}px)`,
                       transition: dragStartX === null ? 'transform 0.3s ease-out' : 'none',
@@ -302,12 +337,18 @@ const Teams = () => {
                     onMouseMove={(e) => dragStartX !== null && handleMouseMove(e, member.id)}
                     onMouseUp={() => handleMouseUp(member.id)}
                     onMouseLeave={() => dragStartX !== null && handleMouseUp(member.id)}
+                    onClick={() => {
+                      // Tap to close if card is open
+                      if (swipedMemberId === member.id) {
+                        closeCard(member.id);
+                      }
+                    }}
                   >
                     <div className="flex items-center gap-4">
-                      {/* Tigo avatar */}
-                      <div className="w-14 h-14 flex-shrink-0">
+                      {/* Tigo profile avatar */}
+                      <div className="w-12 h-12 flex-shrink-0">
                         <img 
-                          src={tigoPenguin} 
+                          src={TigoProfileBluePenguin} 
                           alt={`Avatar de ${member.name}`}
                           className="w-full h-full object-contain"
                         />
