@@ -1,15 +1,17 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { TigoWalkingStrip } from "@/components/TigoWalkingStrip";
 import { WeeklyCalendar } from "@/components/WeeklyCalendar";
 import { ActivitySliderCard } from "@/components/ActivitySliderCard";
 import { ActivityReminderModal } from "@/components/ActivityReminderModal";
 import { CompletionCelebration } from "@/components/CompletionCelebration";
 import { EducationalModal } from "@/components/EducationalModal";
-import { Pill, Droplet, Footprints, BookOpen, Moon, Settings } from "lucide-react";
+import { Pill, Droplet, Footprints, BookOpen, Moon } from "lucide-react";
 import { toast } from "sonner";
 import { LucideIcon } from "lucide-react";
+import { getCurrentUserTeamTotalSteps } from "@/data/teamsData";
 
 // Types
 interface Activity {
@@ -123,7 +125,8 @@ const Home = () => {
   const [educationalModalOpen, setEducationalModalOpen] = useState(false);
   const [educationalActivityId, setEducationalActivityId] = useState<string | null>(null);
   // Cumulative total steps since journey started (never resets)
-  const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(42); // Mock starting value
+  // MUST be 122 to match team data
+  const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(getCurrentUserTeamTotalSteps());
   
   // Team members state - synced with localStorage
   const [teamMemberIds, setTeamMemberIds] = useState<string[]>(getTeamMembersFromStorage());
@@ -199,7 +202,16 @@ const Home = () => {
     if (!completedActivities.includes(id)) {
       setCompletedActivities((prev) => [...prev, id]);
       // Increment cumulative total steps (never resets)
-      setTotalStepsSinceStart((prev) => prev + 1);
+      const newTotal = totalStepsSinceStart + 1;
+      setTotalStepsSinceStart(newTotal);
+      
+      // Save to localStorage for Teams page sync
+      try {
+        localStorage.setItem('totalStepsSinceStart', newTotal.toString());
+        window.dispatchEvent(new Event('totalStepsUpdated'));
+      } catch (e) {
+        console.error('Error saving total steps:', e);
+      }
       
       // Show celebration overlay
       setShowCelebration(true);
@@ -250,22 +262,8 @@ const Home = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Header - Fixed at top */}
-      <header className="bg-card border-b border-border flex-shrink-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-primary">Contigo</h1>
-            <p className="text-sm text-muted-foreground mt-1">Juntos en tu camino</p>
-          </div>
-          <button
-            onClick={() => navigate("/settings")}
-            className="p-2 hover:bg-secondary rounded-full transition-colors"
-            aria-label="Ajustes"
-          >
-            <Settings className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
-      </header>
+      {/* Unified Header */}
+      <UnifiedHeader title="Hoy" />
 
       {/* Section 1: Tigo Walking Strip - Full-width strip at top */}
       <div className="flex-shrink-0">
@@ -273,6 +271,7 @@ const Home = () => {
           steps={totalStepsSinceStart} 
           progress={progress} 
           teamMembers={tigoTeamMembers}
+          onClick={() => navigate("/global-journey")}
         />
       </div>
 

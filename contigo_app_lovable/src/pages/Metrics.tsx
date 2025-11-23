@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { BottomNav } from "@/components/BottomNav";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { Card } from "@/components/ui/card";
 import { 
-  Settings, 
   TrendingUp, 
   Award, 
   CheckCircle, 
@@ -96,19 +96,10 @@ const Metrics = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="w-10" />
-          <h1 className="text-xl font-bold">Métricas</h1>
-          <button
-            onClick={() => navigate("/settings")}
-            className="p-2 hover:bg-muted rounded-full transition-colors"
-          >
-            <Settings className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
-      </header>
+      {/* Unified Header */}
+      <div className="sticky top-0 z-40">
+        <UnifiedHeader title="Métricas" />
+      </div>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-8">
         

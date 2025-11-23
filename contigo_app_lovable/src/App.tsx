@@ -5,11 +5,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Journey from "./pages/Journey";
+import GlobalJourney from "./pages/GlobalJourney";
 import NewHabit from "./pages/NewHabit";
 import Metrics from "./pages/Metrics";
 import ExplorarForos from "./pages/ExplorarForos";
 import PostDetail from "./pages/PostDetail";
 import Teams from "./pages/Teams";
+import Scoreboard from "./pages/Scoreboard";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -24,11 +26,13 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/journey" element={<Journey />} />
+          <Route path="/global-journey" element={<GlobalJourney />} />
           <Route path="/new-habit" element={<NewHabit />} />
           <Route path="/metrics" element={<Metrics />} />
           <Route path="/explorar-foros" element={<ExplorarForos />} />
           <Route path="/post/:id" element={<PostDetail />} />
           <Route path="/teams" element={<Teams />} />
+          <Route path="/scoreboard" element={<Scoreboard />} />
           <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

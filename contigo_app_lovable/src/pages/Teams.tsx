@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Pencil, HandMetal, DoorOpen } from "lucide-react";
+import { Users, Pencil, HandMetal, DoorOpen, Camera, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -15,19 +17,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import TigoProfileBluePenguin from "@/assets/tigo-profile-blue-penguin.png";
+import { getCurrentUserTeam } from "@/data/teamsData";
 
 // IMPORTANT: This must match the TEAM_MEMBERS structure in Home.tsx
 // to ensure consistency between the Tigo journey and the team list
 interface TeamMember {
   id: string;
   name: string;
-  role: string;
+  totalSteps: number; // Individual member's contribution to team total
 }
 
+// Per-member contributions that sum to team total (122)
 const ALL_TEAM_MEMBERS: TeamMember[] = [
-  { id: "user1", name: "Tú", role: "Paciente" },
-  { id: "user2", name: "Ana", role: "Cuidador" },
+  { id: "user1", name: "Tú", totalSteps: 82 },
+  { id: "user2", name: "Ana", totalSteps: 40 },
 ];
+
+// Get total steps from shared team data (must be 122)
+const getTotalStepsFromStorage = (): number => {
+  const currentTeam = getCurrentUserTeam();
+  return currentTeam.totalSteps; // Returns 122
+};
 
 interface TeamInfo {
   name: string;
@@ -69,13 +79,44 @@ const saveTeamMembersToStorage = (members: TeamMember[]) => {
 };
 
 const Teams = () => {
+  const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(getTeamMembersFromStorage());
   const [teamInfo, setTeamInfo] = useState(INITIAL_TEAM_INFO);
+  const [totalSteps, setTotalSteps] = useState(getTotalStepsFromStorage());
   
   // Sync team members to localStorage whenever they change
   useEffect(() => {
     saveTeamMembersToStorage(teamMembers);
   }, [teamMembers]);
+
+  // Listen for total steps changes from Home page
+  useEffect(() => {
+    const handleStepsUpdate = () => {
+      setTotalSteps(getTotalStepsFromStorage());
+    };
+    
+    window.addEventListener('totalStepsUpdated', handleStepsUpdate);
+    
+    return () => {
+      window.removeEventListener('totalStepsUpdated', handleStepsUpdate);
+    };
+  }, []);
+
+  // Team total steps comes from Home (single source of truth)
+  // This is the cumulative total shown in the Tigo journey
+  const teamTotalSteps = totalSteps;
+  
+  // Calculate what percentage each member has contributed
+  // This ensures member totals sum to team total
+  const memberStepsData = teamMembers.map((member, index) => {
+    // Distribute steps proportionally based on mock data ratios
+    const ratio = member.totalSteps / ALL_TEAM_MEMBERS.reduce((sum, m) => sum + m.totalSteps, 0);
+    const calculatedSteps = Math.round(teamTotalSteps * ratio);
+    return {
+      ...member,
+      displaySteps: calculatedSteps,
+    };
+  });
   const [editTeamOpen, setEditTeamOpen] = useState(false);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
@@ -241,12 +282,10 @@ const Teams = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-primary">Mi Equipo</h1>
-          <p className="text-sm text-muted-foreground mt-1">Juntos somos más fuertes</p>
-        </div>
-      </header>
+      {/* Unified Header */}
+      <div className="sticky top-0 z-40">
+        <UnifiedHeader title="Mi equipo" />
+      </div>
 
       <main className="max-w-2xl mx-auto px-4 py-6">
         {/* Team Info Section */}
@@ -258,16 +297,6 @@ const Teams = () => {
             <div className="flex-1 min-w-0">
               <h2 className="text-lg font-semibold">{teamInfo.name}</h2>
               <p className="text-sm text-muted-foreground mt-1">{teamInfo.description}</p>
-              <div className="flex flex-wrap gap-2 mt-3">
-                {teamInfo.treatmentTypes.map((type, index) => (
-                  <span 
-                    key={index}
-                    className="px-3 py-1 bg-primary/20 text-primary text-xs font-medium rounded-full"
-                  >
-                    {type}
-                  </span>
-                ))}
-              </div>
             </div>
             <button
               onClick={() => {
@@ -283,19 +312,51 @@ const Teams = () => {
             </button>
           </div>
           
-          <div className="pt-3 border-t border-border/50">
-            <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{teamMembers.length}</span> miembros en el equipo
-            </p>
+          <div className="pt-3 border-t border-border/50 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{teamMembers.length}</span> miembros en el equipo
+              </p>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Pasos totales del equipo</p>
+              <p className="text-2xl font-bold text-primary">{teamTotalSteps.toLocaleString('es-ES')}</p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Scoreboard Entry Point */}
+        <Card 
+          className="p-4 mb-6 cursor-pointer hover:bg-accent/50 transition-colors"
+          onClick={() => navigate("/scoreboard")}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+              <Trophy className="h-5 w-5 text-yellow-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-base">Ver ranking de equipos</h3>
+              <p className="text-sm text-muted-foreground">Compara tu progreso con otros equipos</p>
+            </div>
           </div>
         </Card>
 
         {/* Team Members */}
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-4">Miembros</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Miembros</h2>
+            <Button 
+              size="sm" 
+              className="gap-2"
+              onClick={() => toast.info("Función de añadir miembro próximamente")}
+            >
+              <Users className="h-4 w-4" />
+              Añadir miembro
+            </Button>
+          </div>
 
           <div className="space-y-3">
-            {teamMembers.map((member) => {
+            {memberStepsData.map((member) => {
               const offset = dragOffsetX[member.id] || 0;
               
               return (
@@ -356,7 +417,9 @@ const Teams = () => {
                       
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-lg">{member.name}</h3>
-                        <p className="text-sm text-muted-foreground">{member.role}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {member.displaySteps.toLocaleString('es-ES')} pasos
+                        </p>
                       </div>
                     </div>
                   </Card>
@@ -377,6 +440,41 @@ const Teams = () => {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
+            {/* Team Photo Section */}
+            <div className="flex flex-col items-center space-y-2">
+              <div className="relative">
+                {/* Team avatar/photo */}
+                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+                  <Users className="h-12 w-12 text-primary" />
+                </div>
+                
+                {/* Camera icon overlay - change photo affordance */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    console.log("Change team photo clicked");
+                    toast.info("Cambiar foto del equipo - próximamente");
+                  }}
+                  className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center shadow-lg transition-colors"
+                  aria-label="Cambiar foto del equipo"
+                >
+                  <Camera className="h-4 w-4 text-primary-foreground" />
+                </button>
+              </div>
+              
+              {/* Change photo text */}
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("Change team photo clicked");
+                  toast.info("Cambiar foto del equipo - próximamente");
+                }}
+                className="text-sm text-primary hover:underline"
+              >
+                Cambiar foto
+              </button>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="team-name">Nombre del equipo</Label>
               <Input
