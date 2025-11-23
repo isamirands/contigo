@@ -93,6 +93,8 @@ const WEEK_DATA = [
 const Home = () => {
   const [completedActivities, setCompletedActivities] = useState<string[]>([]);
   const [remindersModalOpen, setRemindersModalOpen] = useState(false);
+  // Cumulative total steps since journey started (never resets)
+  const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(42); // Mock starting value
 
   // Determine if user is in a team (team has 2+ members)
   const isTeam = TEAM_MEMBERS.length >= 2;
@@ -136,6 +138,8 @@ const Home = () => {
   const handleCompleteActivity = (id: string) => {
     if (!completedActivities.includes(id)) {
       setCompletedActivities((prev) => [...prev, id]);
+      // Increment cumulative total steps (never resets)
+      setTotalStepsSinceStart((prev) => prev + 1);
       
       if (isTeam) {
         toast.success("¡Excelente! Todo el equipo avanza", {
@@ -191,7 +195,7 @@ const Home = () => {
       {/* Section 1: Tigo Walking Strip - Full-width strip at top */}
       <div className="flex-shrink-0">
         <TigoWalkingStrip 
-          steps={teamSteps} 
+          steps={totalStepsSinceStart} 
           progress={progress} 
           teamMembers={tigoTeamMembers}
         />
