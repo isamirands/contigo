@@ -3,6 +3,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { TigoWalkingStrip } from "@/components/TigoWalkingStrip";
 import { WeeklyCalendar } from "@/components/WeeklyCalendar";
 import { ActivitySliderCard } from "@/components/ActivitySliderCard";
+import { RemindersModal } from "@/components/RemindersModal";
 import { Button } from "@/components/ui/button";
 import { Pill, Droplet, Footprints, BookOpen, Plus, Bell, Moon } from "lucide-react";
 import { toast } from "sonner";
@@ -91,6 +92,7 @@ const WEEK_DATA = [
 
 const Home = () => {
   const [completedActivities, setCompletedActivities] = useState<string[]>([]);
+  const [remindersModalOpen, setRemindersModalOpen] = useState(false);
 
   // Determine if user is in a team (team has 2+ members)
   const isTeam = TEAM_MEMBERS.length >= 2;
@@ -185,7 +187,7 @@ const Home = () => {
         </div>
       </header>
 
-      <main className="flex-1 max-w-2xl mx-auto w-full overflow-y-auto">
+      <main className="flex-1 max-w-2xl mx-auto w-full overflow-y-auto pb-20">
         <div className="px-4 pt-6 space-y-6">
           {/* Section 1: Tigo Walking Strip */}
           <TigoWalkingStrip 
@@ -206,8 +208,8 @@ const Home = () => {
           </h2>
         </div>
 
-        {/* Section 3: Scrollable Activities List - Fixed height for 5 cards */}
-        <div className="px-4 py-4 overflow-y-auto" style={{ height: '640px' }}>
+        {/* Section 3: Scrollable Activities List */}
+        <div className="px-4 py-4">
           <div className="space-y-4">
             {activityPool.map((activity, index) => (
               <ActivitySliderCard
@@ -225,7 +227,7 @@ const Home = () => {
         </div>
 
         {/* Section 4: Actions Area - Fixed at bottom */}
-        <div className="px-4 pb-6 pt-4 space-y-3 bg-background border-t border-border">
+        <div className="px-4 pb-6 pt-4 space-y-3 bg-background border-t border-border sticky bottom-0">
           <Button 
             size="lg" 
             className="w-full h-14 text-lg"
@@ -238,7 +240,7 @@ const Home = () => {
             variant="secondary" 
             size="lg" 
             className="w-full h-14 text-lg"
-            onClick={() => toast.info("Función 'Recordatorios' próximamente")}
+            onClick={() => setRemindersModalOpen(true)}
           >
             <Bell className="h-6 w-6" />
             Recordatorios
@@ -247,6 +249,15 @@ const Home = () => {
       </main>
 
       <BottomNav />
+
+      {/* Reminders Modal */}
+      <RemindersModal
+        open={remindersModalOpen}
+        onOpenChange={setRemindersModalOpen}
+        userActivities={CURRENT_USER_ACTIVITIES}
+        teamMembers={TEAM_MEMBERS}
+        isTeam={isTeam}
+      />
     </div>
   );
 };
