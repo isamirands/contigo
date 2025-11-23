@@ -21,13 +21,26 @@ import TigoProfileBluePenguin from "@/assets/tigo-profile-blue-penguin.png";
 interface TeamMember {
   id: string;
   name: string;
-  role: string;
+  totalSteps: number; // Individual member's contribution to team total
 }
 
 const ALL_TEAM_MEMBERS: TeamMember[] = [
-  { id: "user1", name: "Tú", role: "Paciente" },
-  { id: "user2", name: "Ana", role: "Cuidador" },
+  { id: "user1", name: "Tú", totalSteps: 28 },
+  { id: "user2", name: "Ana", totalSteps: 14 },
 ];
+
+// Get total steps from localStorage (synced with Home page)
+const getTotalStepsFromStorage = (): number => {
+  try {
+    const stored = localStorage.getItem('totalStepsSinceStart');
+    if (stored) {
+      return parseInt(stored, 10);
+    }
+  } catch (e) {
+    console.error('Error reading total steps from storage:', e);
+  }
+  return 42; // Default value matching Home
+};
 
 interface TeamInfo {
   name: string;
@@ -71,11 +84,41 @@ const saveTeamMembersToStorage = (members: TeamMember[]) => {
 const Teams = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(getTeamMembersFromStorage());
   const [teamInfo, setTeamInfo] = useState(INITIAL_TEAM_INFO);
+  const [totalSteps, setTotalSteps] = useState(getTotalStepsFromStorage());
   
   // Sync team members to localStorage whenever they change
   useEffect(() => {
     saveTeamMembersToStorage(teamMembers);
   }, [teamMembers]);
+
+  // Listen for total steps changes from Home page
+  useEffect(() => {
+    const handleStepsUpdate = () => {
+      setTotalSteps(getTotalStepsFromStorage());
+    };
+    
+    window.addEventListener('totalStepsUpdated', handleStepsUpdate);
+    
+    return () => {
+      window.removeEventListener('totalStepsUpdated', handleStepsUpdate);
+    };
+  }, []);
+
+  // Team total steps comes from Home (single source of truth)
+  // This is the cumulative total shown in the Tigo journey
+  const teamTotalSteps = totalSteps;
+  
+  // Calculate what percentage each member has contributed
+  // This ensures member totals sum to team total
+  const memberStepsData = teamMembers.map((member, index) => {
+    // Distribute steps proportionally based on mock data ratios
+    const ratio = member.totalSteps / ALL_TEAM_MEMBERS.reduce((sum, m) => sum + m.totalSteps, 0);
+    const calculatedSteps = Math.round(teamTotalSteps * ratio);
+    return {
+      ...member,
+      displaySteps: calculatedSteps,
+    };
+  });
   const [editTeamOpen, setEditTeamOpen] = useState(false);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
@@ -258,16 +301,6 @@ const Teams = () => {
             <div className="flex-1 min-w-0">
               <h2 className="text-lg font-semibold">{teamInfo.name}</h2>
               <p className="text-sm text-muted-foreground mt-1">{teamInfo.description}</p>
-              <div className="flex flex-wrap gap-2 mt-3">
-                {teamInfo.treatmentTypes.map((type, index) => (
-                  <span 
-                    key={index}
-                    className="px-3 py-1 bg-primary/20 text-primary text-xs font-medium rounded-full"
-                  >
-                    {type}
-                  </span>
-                ))}
-              </div>
             </div>
             <button
               onClick={() => {
@@ -283,19 +316,35 @@ const Teams = () => {
             </button>
           </div>
           
-          <div className="pt-3 border-t border-border/50">
-            <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{teamMembers.length}</span> miembros en el equipo
-            </p>
+          <div className="pt-3 border-t border-border/50 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{teamMembers.length}</span> miembros en el equipo
+              </p>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Pasos totales del equipo</p>
+              <p className="text-2xl font-bold text-primary">{teamTotalSteps.toLocaleString('es-ES')}</p>
+            </div>
           </div>
         </Card>
 
         {/* Team Members */}
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-4">Miembros</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Miembros</h2>
+            <Button 
+              size="sm" 
+              className="gap-2"
+              onClick={() => toast.info("Función de añadir miembro próximamente")}
+            >
+              <Users className="h-4 w-4" />
+              Añadir miembro
+            </Button>
+          </div>
 
           <div className="space-y-3">
-            {teamMembers.map((member) => {
+            {memberStepsData.map((member) => {
               const offset = dragOffsetX[member.id] || 0;
               
               return (
@@ -356,7 +405,9 @@ const Teams = () => {
                       
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-lg">{member.name}</h3>
-                        <p className="text-sm text-muted-foreground">{member.role}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {member.displaySteps.toLocaleString('es-ES')} pasos
+                        </p>
                       </div>
                     </div>
                   </Card>

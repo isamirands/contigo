@@ -199,7 +199,16 @@ const Home = () => {
     if (!completedActivities.includes(id)) {
       setCompletedActivities((prev) => [...prev, id]);
       // Increment cumulative total steps (never resets)
-      setTotalStepsSinceStart((prev) => prev + 1);
+      const newTotal = totalStepsSinceStart + 1;
+      setTotalStepsSinceStart(newTotal);
+      
+      // Save to localStorage for Teams page sync
+      try {
+        localStorage.setItem('totalStepsSinceStart', newTotal.toString());
+        window.dispatchEvent(new Event('totalStepsUpdated'));
+      } catch (e) {
+        console.error('Error saving total steps:', e);
+      }
       
       // Show celebration overlay
       setShowCelebration(true);
