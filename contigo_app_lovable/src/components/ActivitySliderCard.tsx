@@ -36,7 +36,9 @@ export const ActivitySliderCard = ({
   const [isDragging, setIsDragging] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef(0);
+  const startYRef = useRef(0);
   const startProgressRef = useRef(0);
+  const isHorizontalGestureRef = useRef(false);
 
   // Get color from palette
   const colorScheme = PASTEL_COLORS[colorIndex % PASTEL_COLORS.length];
@@ -47,22 +49,39 @@ export const ActivitySliderCard = ({
     }
   }, [completed]);
 
-  const handleStart = (clientX: number) => {
+  const handleStart = (clientX: number, clientY: number) => {
     if (completed) return;
-    setIsDragging(true);
     startXRef.current = clientX;
+    startYRef.current = clientY;
     startProgressRef.current = progress;
+    isHorizontalGestureRef.current = false;
+    setIsDragging(true);
   };
 
-  const handleMove = (clientX: number) => {
+  const handleMove = (clientX: number, clientY: number) => {
     if (!isDragging || completed || !cardRef.current) return;
     
-    const cardWidth = cardRef.current.offsetWidth;
     const deltaX = clientX - startXRef.current;
-    const deltaProgress = (deltaX / cardWidth) * 100;
-    const newProgress = Math.max(0, Math.min(100, startProgressRef.current + deltaProgress));
+    const deltaY = clientY - startYRef.current;
     
-    setProgress(newProgress);
+    // Determine gesture direction on first significant movement
+    if (!isHorizontalGestureRef.current && (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5)) {
+      // If movement is more vertical than horizontal, allow scrolling
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        setIsDragging(false);
+        return;
+      }
+      // Gesture is horizontal, proceed with slide-to-complete
+      isHorizontalGestureRef.current = true;
+    }
+    
+    // Only update progress if gesture is horizontal
+    if (isHorizontalGestureRef.current) {
+      const cardWidth = cardRef.current.offsetWidth;
+      const deltaProgress = (deltaX / cardWidth) * 100;
+      const newProgress = Math.max(0, Math.min(100, startProgressRef.current + deltaProgress));
+      setProgress(newProgress);
+    }
   };
 
   const handleEnd = () => {
@@ -78,19 +97,23 @@ export const ActivitySliderCard = ({
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    handleStart(e.clientX);
+    handleStart(e.clientX, e.clientY);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    handleMove(e.clientX);
+    handleMove(e.clientX, e.clientY);
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    handleStart(e.touches[0].clientX);
+    handleStart(e.touches[0].clientX, e.touches[0].clientY);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    handleMove(e.touches[0].clientX);
+    handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    // Only prevent default if gesture is horizontal
+    if (isHorizontalGestureRef.current) {
+      e.preventDefault();
+    }
   };
 
   useEffect(() => {
@@ -111,13 +134,13 @@ export const ActivitySliderCard = ({
   return (
     <div
       ref={cardRef}
-      className={`relative overflow-hidden rounded-3xl transition-all duration-300 ${
+      className={`relative overflow-hidden rounded-2xl transition-all duration-300 ${
         completed ? 'shadow-md' : 'shadow-sm hover:shadow-md'
       } ${!completed && 'cursor-grab active:cursor-grabbing'}`}
       style={{
-        height: '100px',
+        height: '70px',
         userSelect: 'none',
-        touchAction: 'none'
+        touchAction: 'pan-y' // Allow vertical panning (scrolling)
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -144,47 +167,45 @@ export const ActivitySliderCard = ({
       />
 
       {/* Content */}
-      <div className="relative h-full px-5 py-4 flex flex-col justify-between">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-1">
-            <Icon 
-              className="h-7 w-7 flex-shrink-0 text-slate-700 transition-opacity" 
-              style={{ opacity: progress > 70 ? 0.9 : 1 }}
-            />
-            <h3 
-              className="text-lg font-semibold text-slate-800"
-              style={{ opacity: progress > 70 ? 0.95 : 1 }}
-            >
-              {title}
-            </h3>
-          </div>
-          
-          {completed && (
-            <div className="bg-white rounded-full p-1.5 shadow-sm">
-              <Check className="h-5 w-5 text-slate-700" />
-            </div>
-          )}
+      <div className="relative h-full px-4 py-2.5 flex items-center justify-between">
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          <Icon 
+            className="h-5 w-5 flex-shrink-0 text-slate-700 transition-opacity" 
+            style={{ opacity: progress > 70 ? 0.9 : 1 }}
+          />
+          <h3 
+            className="text-sm font-semibold text-slate-800 truncate"
+            style={{ opacity: progress > 70 ? 0.95 : 1 }}
+          >
+            {title}
+          </h3>
         </div>
-
-        <div className="flex items-center justify-between">
+        
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Owner avatars */}
           {owners && owners.length > 0 && (
-            <div className="flex gap-1">
+            <div className="flex gap-0.5">
               {owners.map((owner, index) => (
-                <Avatar key={index} className="w-8 h-8 border-2 border-white shadow-sm">
+                <Avatar key={index} className="w-6 h-6 border border-white shadow-sm">
                   <AvatarImage src={owner.avatar} />
-                  <AvatarFallback className="text-xs bg-white text-slate-700 font-medium">
+                  <AvatarFallback className="text-[10px] bg-white text-slate-700 font-medium">
                     {owner.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               ))}
             </div>
           )}
-
+          
+          {completed && (
+            <div className="bg-white rounded-full p-1 shadow-sm">
+              <Check className="h-4 w-4 text-slate-700" />
+            </div>
+          )}
+          
           {/* Progress hint */}
           {!completed && progress < 90 && (
-            <span className="text-sm font-medium text-slate-600">
-              Desliza →
+            <span className="text-xs font-medium text-slate-600">
+              →
             </span>
           )}
         </div>

@@ -219,8 +219,8 @@ const Home = () => {
         </div>
 
         {/* Section 3: Activities List - Scrollable area that takes remaining space */}
-        <div className="flex-1 px-4 py-4 overflow-y-auto min-h-0">
-          <div className="space-y-4">
+        <div className="flex-1 px-4 py-3 overflow-y-auto min-h-0">
+          <div className="space-y-2.5">
             {activityPool.map((activity, index) => (
               <ActivitySliderCard
                 key={activity.id}

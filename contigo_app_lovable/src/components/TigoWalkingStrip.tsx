@@ -1,4 +1,5 @@
 import tigoPenguin from "@/assets/tigo-walking-blue-penguin.png";
+import TigoJourneyBg from "@/assets/Sendero-penguin.png";
 import { Footprints } from "lucide-react";
 
 interface TeamMember {
@@ -20,9 +21,17 @@ export const TigoWalkingStrip = ({ steps, progress, teamMembers = [] }: TigoWalk
 
   return (
     <div 
-      className="bg-gradient-to-br from-secondary/30 to-accent/20 relative"
-      style={{ height: '200px' }}
+      className="relative"
+      style={{ 
+        height: '200px',
+        backgroundImage: `url(${TigoJourneyBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
     >
+      {/* Subtle overlay for better content visibility */}
+      <div className="absolute inset-0 bg-white/10" />
       {/* Content container - centered with max width */}
       <div className="max-w-2xl mx-auto px-4 h-full flex flex-col relative">
         {/* Row 1: Top bar with step counter */}
@@ -36,10 +45,10 @@ export const TigoWalkingStrip = ({ steps, progress, teamMembers = [] }: TigoWalk
         {/* Row 2: Sky area - takes up most space */}
         <div className="flex-1 min-h-0" />
 
-        {/* Row 3: Path and penguins area - positioned in lower third */}
-        <div className="flex-shrink-0 pb-2">
-          {/* Walking path */}
-          <div className="mb-2">
+        {/* Row 3: Path and penguins area - positioned in lower third, moved 20px lower */}
+        <div className="flex-shrink-0" style={{ paddingBottom: '12px' }}>
+          {/* Walking path - moved 17px lower (20px - 3px adjustment) */}
+          <div className="mb-2" style={{ transform: 'translateY(17px)' }}>
             <div className="relative h-2 bg-muted rounded-full">
               <div 
                 className="absolute h-full bg-primary rounded-full transition-all duration-500"
@@ -47,26 +56,35 @@ export const TigoWalkingStrip = ({ steps, progress, teamMembers = [] }: TigoWalk
               />
             </div>
           
-            {/* Single Tigo (no team) */}
+            {/* Single Tigo (no team) - 1.3x larger */}
             {!isTeam && (
               <div 
-                className="relative transition-all duration-500"
+                className="relative"
                 style={{ 
                   marginLeft: `${Math.max(0, Math.min(progress - 8, 92))}%`,
-                  marginTop: '-48px'
+                  marginTop: '-62px', // Adjusted for larger penguin (was -48px)
+                  transition: 'margin-left 500ms ease-out'
                 }}
               >
                 <img 
                   src={tigoPenguin} 
                   alt="Tigo caminando" 
-                  className="w-20 h-20 object-contain drop-shadow-lg"
+                  className="object-contain drop-shadow-lg"
+                  style={{ 
+                    width: '104px', 
+                    height: '104px',
+                    minWidth: '104px',
+                    minHeight: '104px',
+                    maxWidth: '104px',
+                    maxHeight: '104px'
+                  }}
                 />
               </div>
             )}
 
-            {/* Multiple Tigos (team) */}
+            {/* Multiple Tigos (team) - 1.3x larger */}
             {isTeam && (
-              <div className="relative" style={{ marginTop: '-48px', minHeight: '80px' }}>
+              <div className="relative" style={{ marginTop: '-62px', minHeight: '104px' }}> {/* Adjusted for larger penguins */}
                 {teamMembers.map((member, index) => {
                   // Calculate individual progress for each member
                   const maxSteps = Math.max(...teamMembers.map(m => m.steps));
@@ -76,21 +94,29 @@ export const TigoWalkingStrip = ({ steps, progress, teamMembers = [] }: TigoWalk
                   const horizontalOffset = index * 6; // 6% offset between members
                   const position = Math.max(0, Math.min(memberProgress - 8 + horizontalOffset, 92));
                   
+                  const penguinSize = index === 1 ? '79px' : '83px';
+                  
                   return (
                     <div
                       key={member.id}
-                      className="absolute transition-all duration-500"
+                      className="absolute"
                       style={{
                         left: `${position}%`,
                         top: index === 1 ? '8px' : '0px', // Slight vertical offset for second member
+                        transition: 'left 500ms ease-out, top 500ms ease-out'
                       }}
                     >
                       <img 
                         src={tigoPenguin} 
                         alt={`Tigo de ${member.name}`}
-                        className="w-16 h-16 object-contain drop-shadow-lg"
+                        className="object-contain drop-shadow-lg"
                         style={{
-                          transform: index === 1 ? 'scale(0.95)' : 'scale(1)', // Slightly smaller for depth
+                          width: penguinSize,
+                          height: penguinSize,
+                          minWidth: penguinSize,
+                          minHeight: penguinSize,
+                          maxWidth: penguinSize,
+                          maxHeight: penguinSize
                         }}
                       />
                     </div>
