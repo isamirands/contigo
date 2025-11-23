@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart, Plus } from "lucide-react";
-import { Button } from "@/frontend/components/ui/button";
+import { ArrowLeft, Plus, Heart } from "lucide-react";
 import { Card } from "@/frontend/components/ui/card";
 import { toast } from "sonner";
 
 // Categories
 const CATEGORIES = [
+  { id: "hot", name: "Tendencias", emoji: "🔥" },
   { id: "nutricion", name: "Nutrición", emoji: "🥗" },
   { id: "ejercicio", name: "Ejercicio", emoji: "🏃" },
   { id: "agua", name: "Agua", emoji: "💧" },
@@ -15,8 +15,31 @@ const CATEGORIES = [
   { id: "monitoreo", name: "Monitoreo", emoji: "📊" },
 ];
 
-// Habits data structure
+// All habits with short label
 const HABITS_DATA = {
+  hot: {
+    nivel1: [
+      { id: "h1-1", name: "Tomar un vaso de agua al despertar", emoji: "💧" },
+      { id: "h1-2", name: "Caminar 5 minutos después de comer", emoji: "🚶" },
+      { id: "h1-3", name: "Cambiar una bebida azucarada por agua", emoji: "🥤" },
+      { id: "h1-4", name: "Agregar una porción de verduras a mi plato", emoji: "🥬" },
+      { id: "h1-5", name: "Confirmar 'Tomé mi medicación' hoy", emoji: "✅" },
+    ],
+    nivel2: [
+      { id: "h2-1", name: "Caminar 10 minutos hoy", emoji: "🚶‍♂️" },
+      { id: "h2-2", name: "Hacer un plato ½ verduras, ¼ proteína, ¼ carbo", emoji: "🍽️" },
+      { id: "h2-3", name: "Registrar glucosa después de una comida", emoji: "🩸" },
+      { id: "h2-4", name: "Pasar un día sin bebidas azucaradas", emoji: "🚫" },
+      { id: "h2-5", name: "Beber 1 tomatodo completo en la mañana", emoji: "🥤" },
+    ],
+    nivel3: [
+      { id: "h3-1", name: "Caminar o ejercitarme 20–30 minutos", emoji: "🏃‍♀️" },
+      { id: "h3-2", name: "Preparar un plato peruano versión amigable para diabéticos", emoji: "🇵🇪" },
+      { id: "h3-3", name: "Revisar mi porcentaje semanal de lecturas en rango", emoji: "📊" },
+      { id: "h3-4", name: "Evitar completamente bebidas azucaradas hoy", emoji: "🛑" },
+      { id: "h3-5", name: "Llenar mi tomatodo 3 veces hoy", emoji: "💦" },
+    ],
+  },
   nutricion: {
     nivel1: [
       { id: "n1-1", name: "Reducir ½ cucharadita de azúcar en una bebida", emoji: "🍬" },
