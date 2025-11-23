@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Settings, Heart, User, Image as ImageIcon, Upload, FileText } from "lucide-react";
+import { Plus, Heart, User, Image as ImageIcon, Upload, FileText } from "lucide-react";
 
 // Mock data for forums (carrusel horizontal)
 const FORUMS = [
@@ -137,13 +138,8 @@ const Journey = () => {
       {/* Mobile-like container */}
       <div className="max-w-[430px] w-full bg-card h-[90vh] shadow-xl relative overflow-hidden flex flex-col">
         
-        {/* Header superior - ESTÁTICO */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
-          <div>
-            <div className="text-lg font-bold text-primary">Contigo</div>
-            <div className="text-xs text-muted-foreground">Juntos en tu camino</div>
-          </div>
-        </div>
+        {/* Unified Header */}
+        <UnifiedHeader title="Comunidad" />
 
         {/* Carrusel de foros - ESTÁTICO */}
         <div className="py-5 flex-shrink-0">
@@ -203,7 +199,6 @@ const Journey = () => {
                 <p className="text-xs font-semibold">Dr. Juan Pérez</p>
               </div>
             </div>
-            <Settings className="h-4 w-4 text-muted-foreground" />
           </div>
         </div>
 

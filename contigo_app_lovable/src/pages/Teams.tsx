@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Pencil, HandMetal, DoorOpen, Camera, Trophy } from "lucide-react";
@@ -281,12 +282,10 @@ const Teams = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-primary">Mi Equipo</h1>
-          <p className="text-sm text-muted-foreground mt-1">Juntos somos más fuertes</p>
-        </div>
-      </header>
+      {/* Unified Header */}
+      <div className="sticky top-0 z-40">
+        <UnifiedHeader title="Mi equipo" />
+      </div>
 
       <main className="max-w-2xl mx-auto px-4 py-6">
         {/* Team Info Section */}

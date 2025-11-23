@@ -1,13 +1,14 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { TigoWalkingStrip } from "@/components/TigoWalkingStrip";
 import { WeeklyCalendar } from "@/components/WeeklyCalendar";
 import { ActivitySliderCard } from "@/components/ActivitySliderCard";
 import { ActivityReminderModal } from "@/components/ActivityReminderModal";
 import { CompletionCelebration } from "@/components/CompletionCelebration";
 import { EducationalModal } from "@/components/EducationalModal";
-import { Pill, Droplet, Footprints, BookOpen, Moon, Settings } from "lucide-react";
+import { Pill, Droplet, Footprints, BookOpen, Moon } from "lucide-react";
 import { toast } from "sonner";
 import { LucideIcon } from "lucide-react";
 import { getCurrentUserTeamTotalSteps } from "@/data/teamsData";
@@ -261,22 +262,8 @@ const Home = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Header - Fixed at top */}
-      <header className="bg-card border-b border-border flex-shrink-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-primary">Contigo</h1>
-            <p className="text-sm text-muted-foreground mt-1">Juntos en tu camino</p>
-          </div>
-          <button
-            onClick={() => navigate("/settings")}
-            className="p-2 hover:bg-secondary rounded-full transition-colors"
-            aria-label="Ajustes"
-          >
-            <Settings className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
-      </header>
+      {/* Unified Header */}
+      <UnifiedHeader title="Hoy" />
 
       {/* Section 1: Tigo Walking Strip - Full-width strip at top */}
       <div className="flex-shrink-0">
