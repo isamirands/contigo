@@ -39,27 +39,28 @@ const DayComponent = ({
   const progress = totalActivities > 0 ? (completedActivities / totalActivities) * 100 : 0;
   const isFullyCompleted = progress === 100 && totalActivities > 0;
   
-  // SVG circle calculations
-  const radius = 20;
+  // SVG circle calculations - smaller radius for mobile
+  const radius = 14;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-2 flex-1 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 rounded-2xl p-2 ${
-        isToday ? 'bg-red-50/50 ring-2 ring-red-200/60' : ''
+      className={`flex flex-col items-center gap-1 flex-1 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-1 rounded-xl p-1 min-w-0 ${
+        isToday ? 'bg-red-50/50 ring-1 ring-red-200/60' : ''
       }`}
       style={{
         ...(isToday && { 
           '--tw-ring-color': 'rgba(254, 205, 208, 0.6)' 
-        })
+        }),
+        minHeight: '44px', // Ensure minimum touch target
       } as React.CSSProperties}
       aria-label={`${day} ${date}, ${completedActivities} of ${totalActivities} activities completed`}
     >
       {/* Weekday label */}
       <span 
-        className={`text-xs font-medium ${
+        className={`text-[10px] font-medium leading-none ${
           isToday ? 'font-semibold' : ''
         }`}
         style={{
@@ -70,36 +71,36 @@ const DayComponent = ({
       </span>
       
       {/* Circular progress ring with date */}
-      <div className="relative w-14 h-14 flex items-center justify-center">
+      <div className="relative w-9 h-9 flex items-center justify-center">
         <svg 
           className="absolute inset-0 w-full h-full -rotate-90" 
-          viewBox="0 0 48 48"
+          viewBox="0 0 32 32"
         >
           {/* Background ring - light RIMAC red tint or gray */}
           <circle
-            cx="24"
-            cy="24"
+            cx="16"
+            cy="16"
             r={radius}
             fill="none"
             stroke={totalActivities === 0 ? '#E5E7EB' : RIMAC_RED_LIGHT}
-            strokeWidth="3"
+            strokeWidth="2"
           />
           
           {/* Progress ring - main RIMAC red */}
           {totalActivities > 0 && (
             <circle
-              cx="24"
-              cy="24"
+              cx="16"
+              cy="16"
               r={radius}
               fill="none"
               stroke={RIMAC_RED}
-              strokeWidth="3"
+              strokeWidth="2"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
               className="transition-all duration-500 ease-out"
               style={{
-                filter: isFullyCompleted ? 'drop-shadow(0 0 3px rgba(227, 30, 36, 0.4))' : 'none'
+                filter: isFullyCompleted ? 'drop-shadow(0 0 2px rgba(227, 30, 36, 0.4))' : 'none'
               }}
             />
           )}
@@ -107,7 +108,7 @@ const DayComponent = ({
         
         {/* Date number in center */}
         <span 
-          className={`text-lg font-bold relative z-10`}
+          className={`text-sm font-bold relative z-10 leading-none`}
           style={{
             color: isToday 
               ? RIMAC_RED 
@@ -122,7 +123,7 @@ const DayComponent = ({
         {/* Completion star accent */}
         {isFullyCompleted && (
           <Star 
-            className="absolute -top-1 -right-1 w-4 h-4 animate-in zoom-in duration-300" 
+            className="absolute -top-0.5 -right-0.5 w-3 h-3 animate-in zoom-in duration-300" 
             style={{
               color: RIMAC_RED,
               fill: RIMAC_RED
@@ -137,9 +138,9 @@ const DayComponent = ({
 
 export const WeeklyCalendar = ({ weekData, onDayClick }: WeeklyCalendarProps) => {
   return (
-    <Card className="px-4 py-3">
-      <h3 className="text-lg font-semibold mb-2">Esta semana</h3>
-      <div className="flex justify-between gap-1">
+    <Card className="px-3 py-2">
+      <h3 className="text-base font-semibold mb-1.5">Esta semana</h3>
+      <div className="flex justify-between gap-0.5">
         {weekData.map((dayData, index) => (
           <DayComponent
             key={index}

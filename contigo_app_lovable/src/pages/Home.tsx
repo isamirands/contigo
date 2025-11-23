@@ -180,6 +180,7 @@ const Home = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background">
+      {/* Header - Fixed at top */}
       <header className="bg-card border-b border-border flex-shrink-0 z-40">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-primary">Contigo</h1>
@@ -187,29 +188,33 @@ const Home = () => {
         </div>
       </header>
 
+      {/* Main content - Flex column that fills remaining space */}
       <main className="flex-1 flex flex-col max-w-2xl mx-auto w-full overflow-hidden">
-        {/* Section 1 & 2: Fixed top sections (no scroll) */}
-        <div className="flex-shrink-0 px-4 pt-6 space-y-6">
-          {/* Section 1: Tigo Walking Strip */}
+        {/* Section 1: Tigo Walking Strip - Fixed at top */}
+        <div className="flex-shrink-0 px-4 pt-6">
           <TigoWalkingStrip 
             steps={teamSteps} 
             progress={progress} 
             teamMembers={tigoTeamMembers}
           />
+        </div>
 
-          {/* Section 2: Weekly Calendar */}
+        {/* Section 2: Weekly Calendar - Fixed below Tigo */}
+        <div className="flex-shrink-0 px-4 pt-6">
           <WeeklyCalendar 
             weekData={updatedWeekData} 
             onDayClick={(date) => toast.info(`Ver actividades del día ${date}`)}
           />
+        </div>
 
-          {/* Section 3 Header */}
+        {/* Section 3 Header */}
+        <div className="flex-shrink-0 px-4 pt-6">
           <h2 className="text-xl font-semibold">
             {isTeam ? 'Actividades del equipo' : 'Actividades de hoy'}
           </h2>
         </div>
 
-        {/* Section 3: Fixed-height scrollable Activities List */}
+        {/* Section 3: Activities List - Scrollable area that takes remaining space */}
         <div className="flex-1 px-4 py-4 overflow-y-auto min-h-0">
           <div className="space-y-4">
             {activityPool.map((activity, index) => (
@@ -227,7 +232,7 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Section 4: Fixed Actions Area at bottom */}
+        {/* Section 4: Actions Area - Fixed at bottom */}
         <div className="flex-shrink-0 px-4 pb-6 pt-4 space-y-3 bg-background border-t border-border">
           <Button 
             size="lg" 
