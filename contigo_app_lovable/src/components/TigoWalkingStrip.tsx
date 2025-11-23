@@ -15,92 +15,100 @@ interface TigoWalkingStripProps {
 
 export const TigoWalkingStrip = ({ steps, progress, teamMembers = [] }: TigoWalkingStripProps) => {
   const isTeam = teamMembers.length >= 2;
-  const totalTeamSteps = isTeam ? teamMembers.reduce((sum, member) => sum + member.steps, 0) : steps;
-  const displaySteps = isTeam ? totalTeamSteps : steps;
+  // Format number with comma separator for readability
+  const formattedSteps = steps.toLocaleString('es-ES');
 
   return (
     <div 
-      className="bg-gradient-to-br from-secondary/30 to-accent/20 rounded-2xl p-6 relative overflow-hidden"
-      style={{ minHeight: '200px' }}
+      className="bg-gradient-to-br from-secondary/30 to-accent/20 relative"
+      style={{ height: '200px' }}
     >
-      {/* Step counter */}
-      <div className="absolute top-4 right-4 bg-card/90 rounded-full px-4 py-2 flex items-center gap-2 shadow-sm">
-        <Footprints className="h-5 w-5 text-primary" />
-        <span className="text-lg font-semibold">
-          {displaySteps} pasos {isTeam ? 'equipo' : 'hoy'}
-        </span>
-      </div>
-
-      {/* Walking path */}
-      <div className="mt-16 mb-8">
-        <div className="relative h-2 bg-muted rounded-full">
-          <div 
-            className="absolute h-full bg-primary rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
+      {/* Content container - centered with max width */}
+      <div className="max-w-2xl mx-auto px-4 h-full flex flex-col relative">
+        {/* Row 1: Top bar with step counter */}
+        <div className="flex-shrink-0 py-3">
+          <div className="bg-white/80 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1.5 shadow-sm border border-gray-200/50 w-fit">
+            <Footprints className="h-3.5 w-3.5 text-gray-600" />
+            <span className="text-sm font-semibold text-gray-700">{formattedSteps}</span>
+          </div>
         </div>
-        
-        {/* Single Tigo (no team) */}
-        {!isTeam && (
-          <div 
-            className="relative transition-all duration-500"
-            style={{ 
-              marginLeft: `${Math.max(0, Math.min(progress - 8, 92))}%`,
-              marginTop: '-48px'
-            }}
-          >
-            <img 
-              src={tigoPenguin} 
-              alt="Tigo caminando" 
-              className="w-20 h-20 object-contain drop-shadow-lg"
-            />
-          </div>
-        )}
 
-        {/* Multiple Tigos (team) */}
-        {isTeam && (
-          <div className="relative" style={{ marginTop: '-48px', minHeight: '80px' }}>
-            {teamMembers.map((member, index) => {
-              // Calculate individual progress for each member
-              const maxSteps = Math.max(...teamMembers.map(m => m.steps));
-              const memberProgress = maxSteps > 0 ? (member.steps / maxSteps) * progress : progress;
-              
-              // Offset each Tigo slightly to show them side by side
-              const horizontalOffset = index * 6; // 6% offset between members
-              const position = Math.max(0, Math.min(memberProgress - 8 + horizontalOffset, 92));
-              
-              return (
-                <div
-                  key={member.id}
-                  className="absolute transition-all duration-500"
-                  style={{
-                    left: `${position}%`,
-                    top: index === 1 ? '8px' : '0px', // Slight vertical offset for second member
-                  }}
-                >
-                  <div className="flex flex-col items-center">
-                    <img 
-                      src={tigoPenguin} 
-                      alt={`Tigo de ${member.name}`}
-                      className="w-16 h-16 object-contain drop-shadow-lg"
+        {/* Row 2: Sky area - takes up most space */}
+        <div className="flex-1 min-h-0" />
+
+        {/* Row 3: Path and penguins area - positioned in lower third */}
+        <div className="flex-shrink-0 pb-2">
+          {/* Walking path */}
+          <div className="mb-2">
+            <div className="relative h-2 bg-muted rounded-full">
+              <div 
+                className="absolute h-full bg-primary rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          
+            {/* Single Tigo (no team) */}
+            {!isTeam && (
+              <div 
+                className="relative transition-all duration-500"
+                style={{ 
+                  marginLeft: `${Math.max(0, Math.min(progress - 8, 92))}%`,
+                  marginTop: '-48px'
+                }}
+              >
+                <img 
+                  src={tigoPenguin} 
+                  alt="Tigo caminando" 
+                  className="w-20 h-20 object-contain drop-shadow-lg"
+                />
+              </div>
+            )}
+
+            {/* Multiple Tigos (team) */}
+            {isTeam && (
+              <div className="relative" style={{ marginTop: '-48px', minHeight: '80px' }}>
+                {teamMembers.map((member, index) => {
+                  // Calculate individual progress for each member
+                  const maxSteps = Math.max(...teamMembers.map(m => m.steps));
+                  const memberProgress = maxSteps > 0 ? (member.steps / maxSteps) * progress : progress;
+                  
+                  // Offset each Tigo slightly to show them side by side
+                  const horizontalOffset = index * 6; // 6% offset between members
+                  const position = Math.max(0, Math.min(memberProgress - 8 + horizontalOffset, 92));
+                  
+                  return (
+                    <div
+                      key={member.id}
+                      className="absolute transition-all duration-500"
                       style={{
-                        transform: index === 1 ? 'scale(0.95)' : 'scale(1)', // Slightly smaller for depth
+                        left: `${position}%`,
+                        top: index === 1 ? '8px' : '0px', // Slight vertical offset for second member
                       }}
-                    />
-                    <span className="text-xs font-medium text-foreground bg-card/90 px-2 py-1 rounded-full shadow-sm mt-1 whitespace-nowrap">
-                      {member.name}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                    >
+                      <img 
+                        src={tigoPenguin} 
+                        alt={`Tigo de ${member.name}`}
+                        className="w-16 h-16 object-contain drop-shadow-lg"
+                        style={{
+                          transform: index === 1 ? 'scale(0.95)' : 'scale(1)', // Slightly smaller for depth
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <p className="text-center text-sm text-muted-foreground mt-4">
-        {isTeam ? 'Avancen juntos completando actividades' : 'Completa actividades para avanzar'}
-      </p>
+        </div>
+
+        {/* Message text - positioned at very bottom */}
+        <div className="absolute bottom-0 left-0 right-0 pb-1">
+          <p className="text-center text-xs text-muted-foreground">
+            {isTeam ? 'Avancemos juntos completando actividades' : 'Completa actividades para avanzar'}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

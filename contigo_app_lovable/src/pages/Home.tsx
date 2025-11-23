@@ -93,6 +93,8 @@ const WEEK_DATA = [
 const Home = () => {
   const [completedActivities, setCompletedActivities] = useState<string[]>([]);
   const [remindersModalOpen, setRemindersModalOpen] = useState(false);
+  // Cumulative total steps since journey started (never resets)
+  const [totalStepsSinceStart, setTotalStepsSinceStart] = useState(42); // Mock starting value
 
   // Determine if user is in a team (team has 2+ members)
   const isTeam = TEAM_MEMBERS.length >= 2;
@@ -136,6 +138,8 @@ const Home = () => {
   const handleCompleteActivity = (id: string) => {
     if (!completedActivities.includes(id)) {
       setCompletedActivities((prev) => [...prev, id]);
+      // Increment cumulative total steps (never resets)
+      setTotalStepsSinceStart((prev) => prev + 1);
       
       if (isTeam) {
         toast.success("¡Excelente! Todo el equipo avanza", {
@@ -188,17 +192,17 @@ const Home = () => {
         </div>
       </header>
 
+      {/* Section 1: Tigo Walking Strip - Full-width strip at top */}
+      <div className="flex-shrink-0">
+        <TigoWalkingStrip 
+          steps={totalStepsSinceStart} 
+          progress={progress} 
+          teamMembers={tigoTeamMembers}
+        />
+      </div>
+
       {/* Main content - Flex column that fills remaining space */}
       <main className="flex-1 flex flex-col max-w-2xl mx-auto w-full overflow-hidden">
-        {/* Section 1: Tigo Walking Strip - Fixed at top */}
-        <div className="flex-shrink-0 px-4 pt-6">
-          <TigoWalkingStrip 
-            steps={teamSteps} 
-            progress={progress} 
-            teamMembers={tigoTeamMembers}
-          />
-        </div>
-
         {/* Section 2: Weekly Calendar - Fixed below Tigo */}
         <div className="flex-shrink-0 px-4 pt-6">
           <WeeklyCalendar 
